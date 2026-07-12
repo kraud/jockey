@@ -1,0 +1,20 @@
+[
+  {
+    "id": "20260713-phase1-design-lock",
+    "timestamp": "2026-07-13T00:00:00Z",
+    "concern": "design",
+    "tags": ["gameplay-loop", "milestone", "drinking-game"],
+    "milestone": "Define Core Loop",
+    "files_affected": [".context/game_design.md", ".context/roadmap.md", ".context/todo_random.md", ".context/captains_log.json"],
+    "summary": {
+      "decision_made": "Locked Phase 1 gameplay loop for the pure-chance drinking-game race. Single round = Lobby → Bidding → Setup → Race → Settlement → Distribution → Ready. 9 phases total. Bidding capped 1–5, all bids public, 30s distribution timer with uniform-random fallback, 4 horses, track 6–20.",
+      "options_considered": ["Pure-chance (chosen) vs. light influence lever for V1", "Full hidden bids vs. public bids (chose public for social drama)", "Bid cap 1–5 (chosen) vs. free-amount vs. multi-horse split", "Random fallback policy: uniform random (chosen) vs. equal split vs. lowest-consumption target"],
+      "difficulties_encountered": "Track-card flip rule (last-placed horse triggers) creates an asymmetric early/late-race dynamic; explicitly documented in Core Loop Step 5 and Glossary 'Step (last-placed horse triggers flip)' to avoid future confusion.",
+      "reversals_and_refactors": "N/A — first design pass.",
+      "key_takeaway": "V1 is a pure-luck betting game where the only meaningful choice is bid-amount + post-race drinks distribution; deck-builder effect cards are explicitly deferred to V2."
+    },
+    "meta": {
+      "confidence_score": 4
+    }
+  }
+]
