@@ -66,4 +66,27 @@
       "confidence_score": 5
     }
   }
+,
+  {
+    "id": "20260713-repo-layout-decision",
+    "timestamp": "2026-07-13T14:23:25Z",
+    "concern": "architecture",
+    "tags": ["hosting", "architecture"],
+    "milestone": "Architecture & Stack",
+    "files_affected": [".context/architecture.md"],
+    "summary": {
+      "decision_made": "Workers/DOs code lives in src/ (parallel to frontend/ for the Pages SPA). Both are siblings under the project root, reflecting their separate deployment targets — wrangler deploy for src/, wrangler pages deploy for frontend/.",
+      "options_considered": [
+        "src/ (chosen) — standard Workers project convention, wrangler.toml defaults, and the `src/` vs `frontend/` pairing is immediately understood without explanation",
+        "backend/ — symmetric label with frontend/ but over-promises scope (no REST API, no DB, no auth middleware running here)",
+        "engine/ — matches the 'game engine' phrase but undersells the Worker HTTP/WS routing and DO orchestration layers"
+      ],
+      "difficulties_encountered": "None — the decision was straightforward once the question was asked. The architecture doc had been vague about the exact layout.",
+      "reversals_and_refactors": "N/A — first time committing the repo layout to a decision document.",
+      "key_takeaway": "Naming the Workers directory src/ keeps the project approachable for anyone familiar with Cloudflare Workers conventions, and separates concerns cleanly from the frontend SPA."
+    },
+    "meta": {
+      "confidence_score": 5
+    }
+  }
 ]

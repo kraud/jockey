@@ -226,16 +226,21 @@ The stack can scale well beyond V1 without rewriting the core:
 The actual code will be organized as:
 
 ```
-src/
-├── index.ts            # Worker entry: routes HTTP + WS to DO
-├── room.ts             # Durable Object class: state machine + WS handler
-├── game/
-│   ├── types.ts        # Game state shapes (Room, Player, Horse, etc.)
-│   ├── machine.ts      # Phase state machine transitions
-│   ├── race.ts         # Deck, draws, movement, regression, finish detection
-│   └── settlement.ts   # Settlement math (payouts per placement)
-└── ws/
-    └── messages.ts     # Message type definitions and validation
+project-root/
+├── src/
+│   ├── index.ts            # Worker entry: routes HTTP + WS to DO
+│   ├── room.ts             # Durable Object class: state machine + WS handler
+│   ├── game/
+│   │   ├── types.ts        # Game state shapes (Room, Player, Horse, etc.)
+│   │   ├── machine.ts      # Phase state machine transitions
+│   │   ├── race.ts         # Deck, draws, movement, regression, finish detection
+│   │   └── settlement.ts   # Settlement math (payouts per placement)
+│   └── ws/
+│       └── messages.ts     # Message type definitions and validation
+└── frontend/                # Pages SPA (separate deployable)
+    ├── index.html
+    ├── main.ts
+    └── ...
 ```
 
 The frontend is a separate SPA in `frontend/` deployed to Pages. For V1, we'll use plain TypeScript with no framework — the Pages dev server serves the HTML/JS directly with zero build step.
