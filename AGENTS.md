@@ -126,3 +126,26 @@ To prevent the core `.context/roadmap.md` and `.context/game_design.md` files fr
 - **Agent Behavior:** 
   - The user can explicitly ask you to add items to, modify, or read from this file at any time.
   - If the user brings up an interesting idea during a deep design session that is too distracting for the current milestone, gently suggest: *"That's a great concept, but outside our current scope. Should I drop that into `todo_random.md` for later?"*
+
+---
+## Future Concept Vault: Race Modifiers
+
+To preserve game expansion ideas without complicating the core Phase 1 prototype scope, the project maintains a dedicated ideation vault at `.context/race_modifiers.md`.
+
+### Usage & Structured Interview Protocol
+- **Purpose:** Tracks mechanical expansions, card abilities, track environmental effects, and distinct race traits to be evaluated in a post-PoC version of the game.
+- **Agent Behavior (The Modifier Interview):**
+  When the user pitches a new modifier idea, do not just drop a flat bullet point. Actively guide them through an interactive clarification flow to fully form the concept:
+  1. **Acknowledge and Capture:** Grab the core concept immediately.
+  2. **Prompt for Core Fields:** Ask for a explicit *Description* and *Beneficiary* (Self, Opponent, Global State change, etc.).
+  3. **Dig Deeper (Upgrades):** Ask if the modifier can scale or be upgraded over time. If so, request a short sub-title and sub-description for that upgrade path.
+  4. **The "Fast-Track" Exception:** If the user signals they are in a rush or the idea is half-baked (e.g., "Just save the concept for now"), bypass the interview, fill out the basic title, set other fields to *[Pending Definition]*, and commit the file.
+
+### Markdown Schema to Follow
+All entries appended to `.context/race_modifiers.md` must adhere strictly to this clean structural format:
+
+### [Modifier Title]
+- **Description:** Clear summary of what the modifier alters in the gameplay loop.
+- **Beneficiary:** `Self` | `Opponent` | `Global (State Change)` | `Unspecified`
+- **Upgrades:**
+  - **[Upgrade Title]:** Short description of how the effect scales up or changes.

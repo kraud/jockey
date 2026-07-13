@@ -16,5 +16,31 @@
     "meta": {
       "confidence_score": 4
     }
+  },
+  {
+    "id": "20260713-race-modifier-vault",
+    "timestamp": "2026-07-13T12:00:00Z",
+    "concern": "design",
+    "tags": ["gameplay-loop"],
+    "milestone": "Define Core Loop",
+    "files_affected": [
+      ".context/race_modifiers.md",
+      "AGENTS.md",
+      ".context/todo_random.md"
+    ],
+    "summary": {
+      "decision_made": "Created a dedicated Future Concept Vault at .context/race_modifiers.md to capture expansion ideas (Energy Channeling, Track modifiers, Suit Synchronization) without scope-creeping the V1 prototype. AGENTS.md updated with a structured interview protocol for capturing and refining future modifier pitches.",
+      "options_considered": [
+        "Dedicated vault file with structured schema (field descriptions, beneficiary, upgrades) — chosen",
+        "Keep ideas flattened in todo_random.md — rejected (too unstructured, no upgrade paths)",
+        "No formal capture, rely on memory — rejected (ideas get lost)"
+      ],
+      "difficulties_encountered": "Balancing a schema structured enough for future design work but lightweight enough not to create friction during brainstorming. The current schema uses a 'fast-track' bypass clause for half-baked ideas.",
+      "reversals_and_refactors": "N/A — first implementation of this process.",
+      "key_takeaway": "Formalizing an ideation vault early prevents promising expansion concepts from either being forgotten or prematurely derailing the core prototype."
+    },
+    "meta": {
+      "confidence_score": 3
+    }
   }
 ]
