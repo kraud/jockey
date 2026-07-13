@@ -1,13 +1,52 @@
 # Game Design Document
 *This file tracks the core loop and game mechanics.*
 
+## Lobby & Player Management
+
+### Room Lifecycle
+
+1. A player opens the site and creates a room → becomes the **host**. The room gets a unique room code shared via QR code or text.
+2. Players join the room via one of two methods:
+   - **Independent player** (own device): enters the room code, picks a display name, joins. Handles their own bets, drink distribution, etc. from their own browser.
+   - **Hosted player** (managed by host): the host adds them by name. The host manages all game actions for these players (suit selection, bets, drink distribution). Hosted players spectate only; their choices are executed by the host. Useful for streaming/broadcasting to a larger audience without requiring each spectator to control their own device.
+3. The host is by default also a player, but can opt out to purely host/manage.
+
+### Host Controls (always available, time-independent)
+
+#### Room Settings (pre-race)
+- **Track length** (default 6, range 6–20). All players see the current setting.
+- Additional parameters determined later — all host-configured, all players perceive the results.
+
+#### Player Management
+- **Lock room:** toggle preventing any further players from joining.
+- **Kick player:** remove any player from the room at any time.
+
+#### Game Flow
+- **Start race:** begins the Bidding phase. The host decides when to start, even if they are the only player.
+- **Progress to next phase:** the host advances the game through each phase (Bidding → Race → Settlement → Distribution → Ready). Ready signals from players are informational only — the host is never blocked from advancing.
+
+### Bidding Process (by player type)
+
+- **Independent player** (own device): chooses suit + bid amount on their own device, submits independently. Their bet is marked `confirmed`.
+- **Hosted player** (managed by host): the host chooses suit + bid amount for them via the host UI, submits on their behalf. Their bet is marked `confirmed`.
+- **Host-as-player:** the host manages their own bet like an independent player on their own device.
+
+The host (and all independent players) can see which players have confirmed their bets and which are still pending. The host starts the race once ready.
+
+### Distribution & Ready (by player type)
+
+- **Independent player** (own device): assigns their drinks via their own device during the 30 s window, then marks themselves ready after drinking.
+- **Hosted player** (managed by host): the host assigns drinks for them via the host UI. Their "ready" state is toggleable by the host.
+- **Host-as-player:** the host manages their own drinks on their own device.
+
+---
+
 ## Core Loop
 
-The game proceeds in a single round from Lobby through Ready phase. Each round is independent — no state carries between rounds except player identity.
+The game proceeds in a single round from Lobby through Ready phase (see "Lobby & Player Management" above for how players join and interact). Each round is independent — no state carries between rounds except player identity.
 
 ### 1. Lobby
-Players join the room. The host configures `trackLength` (default 6, range 6–20 inclusive). The host starts the race when all players are ready.
-
+See **Lobby & Player Management** section above for room creation, joining, host controls, and player types (independent vs hosted). The host configures room settings, manages players, and starts the race when ready.
 ### 2. Bidding
 Each player secretly picks one of the 4 suits (Coins, Cups, Swords, Clubs) and a bid amount 1–5. No bid can be changed once submitted. Bidding closes when all active players have submitted, or after a 30 s soft timer (host's choice to enforce; default = wait for all). All bids are revealed to all players simultaneously.
 
@@ -53,6 +92,10 @@ Once all drinks are settled, every player sees their own `drinks_to_consume` tot
 - **Horse** — a runner identified by suit. The four horses are Coins, Cups, Swords, Clubs.
 - **Jockey Card** — the four `11` cards of the Spanish deck, removed from the Draw Pile at race start. Each one represents the rider of a horse for narrative purposes but is not used as a gameplay card in V1.
 - **Lobby** — pre-race state where players join and the host configures the round.
+- **Host** — the player who created the room. Controls room settings, player management (lock/kick), and game flow progression. Can also play as a regular player (host-as-player) or opt out to purely manage.
+- **Hosted Player** — a player managed by the host. The host chooses suit, places bets, and distributes drinks on their behalf. Hosted players spectate only. Useful for streaming/broadcasting.
+- **Independent Player** — a player on their own device. Enters via room code, picks a display name, and handles their own bets and drink distribution.
+
 - **Placement** — a horse's finishing rank (1, 2, 3, or 4). Assigned in strict crossing order.
 - **Race** — the period from the first deck draw until the third horse crosses the finishing line.
 - **Ready Phase** — the post-Distribution phase where each player presses a "ready" button once they have consumed their drinks.
@@ -69,18 +112,20 @@ Once all drinks are settled, every player sees their own `drinks_to_consume` tot
 ## Data Model
 
 ### Room
-- `id` (string)
+- `id` (string, internal)
+- `roomCode` (string, human-readable short code for sharing)
 - `host` (playerId)
+- `isLocked` (bool, prevents new joiners)
 - `players` (list of Player)
 - `trackLength` (int, default 6, range 6..20)
 - `state` (enum: LOBBY | BIDDING | SETUP | RACING | SETTLEMENT | DISTRIBUTION | READY)
 - `createdAt` (timestamp)
 
 ### Player
-- `id` (string)
 - `name` (string)
-- `isActive` (bool)
-- `isConnected` (bool)
+- `type` (enum: `independent` | `hosted`)
+- `isConnected` (bool; independent players only, hosted are always considered connected)
+
 
 ### Bid
 - `playerId`

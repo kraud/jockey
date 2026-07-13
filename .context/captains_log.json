@@ -42,5 +42,28 @@
     "meta": {
       "confidence_score": 3
     }
+  },
+  {
+    "id": "20260713-architecture-selection",
+    "timestamp": "2026-07-13T14:00:00Z",
+    "concern": "architecture",
+    "tags": ["networking", "state-machine", "hosting", "milestone"],
+    "milestone": "Select Architecture Stack",
+    "files_affected": [".context/roadmap.md", ".context/game_design.md", ".context/architecture.md"],
+    "summary": {
+      "decision_made": "Selected Cloudflare Workers + Durable Objects + Pages for the V1 prototype. Per-room Durable Objects provide strong state consistency for the 9-phase state machine with concurrent player actions. WebSocket transport via DO's Hibernation API handles real-time sync for up to 20 players per room. No database needed — game state is ephemeral in DO memory. Room codes derived from DO IDs.",
+      "options_considered": [
+        "Cloudflare Workers + Durable Objects + Pages (chosen) — true $0, per-room consistency, WebSocket native, edge-deployed, no DevOps",
+        "Bun/Hono on Fly.io — simpler single-process model, free tier but VMs sleep on inactivity causing ~5s cold starts",
+        "WebRTC P2P — pure peer-to-peer, no server cost, but NAT traversal and hosted-player model make it too complex for a prototype",
+        "SSE + POST — works on serverless but clunky bidirectional flow for bidding/distribution phases"
+      ],
+      "difficulties_encountered": "Had to weigh per-room consistency guarantees against operational simplicity. The hosted player model (host manages bets/drinks for spectating players) eliminates WebRTC/P2P approaches because the server must be authoritative for both player types. Durable Objects' WebSocket Hibernation API solves the idle-room cost problem — inactive rooms cost nothing until a player reconnects.",
+      "reversals_and_refactors": "N/A — first architectural decision.",
+      "key_takeaway": "Durable Objects' per-room isolation maps cleanly to the game's room-per-game model; the 9-phase state machine becomes a simple class inside a DO, with each WebSocket connection representing one player (or one host managing multiple hosted players)."
+    },
+    "meta": {
+      "confidence_score": 5
+    }
   }
 ]

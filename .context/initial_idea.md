@@ -51,4 +51,28 @@ Once all players are ready, the game proceeds to the next round, where the whole
 
 ### Additional Notes
 
--
+#### Implementation details
+
+- Target concurrent players per game? Between 1 and 20 different users per room. The room-game relationship is one-to-one.
+- Max expected simultaneous rooms? Indeterminate amount of rooms. When going into the site, it asks you to create a room or join an existing one (via QR code or room code).
+- Latency tolerance? Real-time card reveals + race animation, or is server-driven "step snapshots" acceptable? For this first prototype, basic sync between the different clients is enough, no need for perfect frame/pixel sync, like in a fighting game.
+- Persistence? Do you want to keep game history / replays, or are rounds fully ephemeral? For the first prototype, each round is fully ephemeral.
+- Hosting budget? $0/mo prototype tier, or are you willing to spend a small amount? If possible, completely free hosting for the first prototype. No accounts, just creating rooms and playing.
+
+The proposed loop is:
+1. One player opens the site and creates a room (they become the host - but by default still are a player in the game but they can opt out and only host and manage the game for other players), and has a unique room code they can share with other users that want to join play with them.
+  * 1.1: (optional) The host can change settings on the game, like length of the track, and other parameters to be determined later. All players in the room percibe the results of these settings, but cannot change them themselves.
+  * 1.2: (optional) The host can lock the room, preventing any further players from joining.
+  * 1.3: (optional) The host can at any time kick any player from the room.
+2. Other players can be added into the room, via one of the following methods:
+  * 2.a: Other users join the room from their own devices (browsers) using the room code (let's call them 'independent players'). They have to choose a name to display. They will handle their own bets, drink distribution, etc.
+  * 2.b: The host can add other players to the room (let's call them 'hosted players').  If so, the host is in charge of managing the game for those players (choosing suit, specifying bet, distributing drinks, etc.). The host also sets the name for them. These players only spectate the game and their choices are executed by the host (useful for streaming or broadcasting the game to a larger audience - without having to rely on individual players to execute their choices).
+3. At will, the host can start the game loop (even if they are the only player in the room).
+4. Once the game loop starts, players choose their suit and place bets. The process is different for independent players and hosted players:
+  * Independent players: They choose their suit and place bets independently, without the host's intervention, from their own devices. Once done, they submit their choices to the host and mark their bets as 'confirmed'. The host can manage their own bets - they are their own independent players.
+  * Hosted players: They are managed by the host, who chooses their suit and places bets on their behalf. Once done, the host submits their choices and marks their bets as 'confirmed'.
+5. The host (as well as all the independent players) can visualize the status of the bets to see if they are confirmed or not. At will, the host can start the next stage of the game loop, which is the race.
+6. The race takes place as defined on the game_desing.md file.
+7. Once the race is over, the settlement phase takes place and all the users are awarded their winnings/penalties according to the rules defined on the game_design.md file.
+8. From here, the distribution phase begins. The host (and all the independent players) can then assign drinks to the players according to the rules defined on the game_design.md file. The default time limit for this is 30 seconds. From there, they are in a 'busy' state, and are informed of how many drinks they need to take.
+9. Once they are done taking their drinks, they mark themselves as 'ready', to inform the host that they are ready to proceed. The host can proceed with the next stage of the game loop at any point (the ready signal is informational only - not a limitation for the host).
