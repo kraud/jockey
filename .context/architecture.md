@@ -31,7 +31,7 @@ All three are Cloudflare products. They live on Cloudflare's global network — 
 | Requirement | How the stack handles it |
 |---|---|
 | Up to 20 players per room | Durable Object holds all 20 WebSocket connections and broadcasts state changes to all of them |
-| Unlimited simultaneous rooms | Each room is its own Durable Object — they don't share memory or CPU. Cloudflare spins them up on demand |
+| Indeterminate (free tier: 100k concurrent DOs, well beyond V1 needs) | Each room is its own Durable Object — they don't share memory or CPU. Cloudflare spins them up on demand |
 | $0/mo hosting | Pages (unlimited static bandwidth), Workers (100k req/day free), Durable Objects (1M req/mo free) — a prototype with friends uses a tiny fraction of these limits |
 | No accounts, room codes only | A Durable Object creates itself when someone creates a room; its unique ID becomes the room code. No auth, no database |
 | Real-time sync (not frame-perfect) | WebSocket connections from every player's browser talk directly to the Durable Object. When the race state changes, the DO pushes the update to every connected browser |
@@ -55,9 +55,9 @@ sequenceDiagram
     Browser->>Worker: POST /api/room (create room)
     Worker->>DO: Create new DO instance
     DO-->>Worker: Return room ID
-    Worker-->>Browser: { roomCode: "ABCD" }
+    Worker-->>Browser: { roomCode: "AB12" }
     
-    Browser->>Worker: GET /ws?room=ABCD (WebSocket upgrade)
+    Browser->>Worker: GET /ws?room=AB12 (WebSocket upgrade)
     Worker->>DO: Forward WebSocket to DO
     Note over DO, Browser: WebSocket connection established
     
@@ -92,7 +92,7 @@ sequenceDiagram
 **What it does for us:**
 - `POST /api/room` → Creates a new Durable Object for a game room, returns the room code
 - `POST /api/room/join` → Validates a room code exists
-- `GET /ws?room=ABCD` → Upgrades the browser connection to a WebSocket and forwards it to the correct Durable Object
+- `GET /ws?room=AB12` → Upgrades the browser connection to a WebSocket and forwards it to the correct Durable Object
 
 That's it. The Worker is a thin routing layer — it doesn't run any game logic.
 
@@ -106,12 +106,15 @@ That's it. The Worker is a thin routing layer — it doesn't run any game logic.
 - **Owns the game state:** The DO holds the authoritative `Room` object — all players, bids, horses, track cards, deck state, drink counters. This is the single source of truth. No database, no sync conflicts.
 - **Runs the game logic:** The DO runs the state machine (Lobby → Bidding → Setup → Racing → Settlement → Distribution → Ready), the race algorithm (draw cards, move horses, check for finishes), and settlement math.
 - **Manages WebSocket connections:** Every player's browser connects to the DO via a WebSocket. When state changes (e.g., a horse moves), the DO broadcasts the update to every connected browser.
+The DO also uses Cloudflare's WebSocket Hibernation API — when no messages are flowing, the DO hibernates its CPU while keeping connections open, waking instantly on the next message. This is why idle rooms cost nothing.
 - **Schedules timers:** The DO has `alarm()` — a built-in timer that fires even if the DO is idle. This handles the 30s bidding timer, 30s distribution timer, and 60s ready timer.
 - **Handles hosted players:** The host's WebSocket connection sends actions like `host_place_bid_for_player` targeting a hosted player's ID. The DO processes it exactly like an independent player's action — it doesn't care who pressed the button.
 
 **Key property — "single-threaded, event-loop based":** Inside a DO, only one piece of code runs at a time. This means no race conditions. When two bids arrive at the same instant, they're processed one after the other, not simultaneously. This is perfect for a turn/phase-based game.
 
 **Key property — "ephemeral":** A DO lives in memory. If the last WebSocket disconnects and no one reconnects for a while, Cloudflare may evict it. That's fine — our game is ephemeral by design. When a player reconnects to a room code, Cloudflare restores the DO (if it was evicted) or creates a new empty one (if the game ended).
+
+**Reconnection caveat:** A mid-phase reconnect (e.g., a player dropped their phone for a few seconds) works — the `state_sync` message restores the view. But if all players disconnect and Cloudflare evicts the DO before anyone reconnects, the in-progress race is lost. The new DO starts from scratch in the lobby.
 
 ### 4. WebSocket — The Communication Channel
 
@@ -142,7 +145,7 @@ All messages are JSON objects with a `type` field. Here's the rough shape — we
 | `host_start_race` | — | Host starts the Bidding phase |
 | `place_bid` | `{ suit, amount }` | Player submits their bid |
 | `host_place_bid` | `{ playerId, suit, amount }` | Host bids on behalf of a hosted player |
-| `host_advance_phase` | — | Host advances to the next game phase |
+| `host_advance_phase` | — | Host advances to the next game phase. Short-circuits any remaining phase timer (30s bid/distribution, 60s ready). |
 | `assign_drink` | `{ to, amount }` | Player assigns a drink to someone |
 | `ready` | — | Player marks themselves ready |
 | `host_set_ready` | `{ playerId, ready: boolean }` | Host toggles a hosted player's ready state |
@@ -212,13 +215,14 @@ The stack can scale well beyond V1 without rewriting the core:
 | Authentication | Add a login flow. The DO checks a session token before accepting WS messages |
 | Multiple game types | The Worker routes to different DO classes based on game type. Each game type gets its own DO implementation |
 | Higher player counts (50+) | Single DO still works for one room — the concern is memory, not concurrency. Profile and optimize |
-| Persistent rooms (games that last days) | DOs can persist state to DO storage (`ctx.storage`) — built-in, no extra cost. The DO survives evictions |
+| Persistent rooms (games that last days) | DOs can persist state to DO storage (`ctx.storage`) — built-in, low cost (see CF pricing for DO storage I/O). The DO survives evictions |
 | Mobile app | The WebSocket API is transport-agnostic. A React Native or Swift client connects to the same Worker endpoint |
 
 ---
 
-## Next: Implementation Plan
+## Proposed Implementation Plan
 
+**Note:** No files exist yet under `src/` — this layout is the target structure.
 The actual code will be organized as:
 
 ```
@@ -234,6 +238,6 @@ src/
     └── messages.ts     # Message type definitions and validation
 ```
 
-The frontend is a separate SPA in `frontend/` deployed to Pages.
+The frontend is a separate SPA in `frontend/` deployed to Pages. For V1, we'll use plain TypeScript with no framework — the Pages dev server serves the HTML/JS directly with zero build step.
 
 We'll start by building the **game engine** (everything under `src/game/`) as pure TypeScript with no Cloudflare dependencies — testable locally with `bun test` before we ever deploy a Worker.
