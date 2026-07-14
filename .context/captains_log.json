@@ -88,5 +88,45 @@
     "meta": {
       "confidence_score": 5
     }
+  },
+  {
+    "id": "20260713-mvp-implementation",
+    "timestamp": "2026-07-13T23:55:00Z",
+    "concern": "code",
+    "tags": ["gameplay-loop", "state-machine", "networking", "milestone"],
+    "milestone": "MVP Implementation",
+    "files_affected": [
+      "src/game/types.ts",
+      "src/game/random.ts",
+      "src/game/setup.ts",
+      "src/game/race.ts",
+      "src/game/settlement.ts",
+      "src/game/machine.ts",
+      "src/ws/messages.ts",
+      "src/room.ts",
+      "src/index.ts",
+      "frontend/index.html",
+      "frontend/main.ts",
+      "frontend/ws-client.ts",
+      "wrangler.toml",
+      "package.json",
+      "tsconfig.json",
+      "tests/"
+    ],
+    "summary": {
+      "decision_made": "Delivered full MVP vertical slice: pure-TS game engine (15 state-machine functions), Cloudflare Worker + Durable Object with WebSocket Hibernation API, and vanilla-TS Pages SPA. Race pacing uses self-rescheduling DO alarms (750ms/draw) rather than a synchronous loop — avoids blocking the handler and aligns with the platform's timer idiom used for bid/dist/ready deadlines.",
+      "options_considered": [
+        "Synchronous race loop in webSocketMessage handler — rejected; would hold the inbound-message invocation open for 60+s and risk duration guards",
+        "Self-rescheduling alarms (chosen) — one draw per alarm tick, returns from handler immediately, matches existing bid/dist/ready timer pattern",
+        "Room code passed via X-Room-Code header from Worker to DO — DO derives identity from idFromName but needs the human-readable code for state_sync payloads",
+        "host_set_track_length WS message added to B1 contract — plan omission caught during implementation; 15-line fix across messages.ts + room.ts"
+      ],
+      "difficulties_encountered": "Track-card flip / regression rule (Step 5) is the most subtle engine path: 'regression is not a re-passing' means one draw → at most one flip + one regression, no cascading. WebSocket Hibernation API requires compat flag removal (web_socket_hibernation doesn't exist as a flag; hibernation is native in modern Workers). Browser tool sandbox can't reach localhost for D5 smoke — relied on C4 eval smoke (create room → WS → bid → race streaming → settlement) as verification gate.",
+      "reversals_and_refactors": "Advisory-driven fix: race pacing redesigned from synchronous loop to alarm-driven before room.ts was written. Room code forwarding added mid-implementation (DO didn't receive the code). collision detection in /init fixed from always-200 to 409-on-collision.",
+      "key_takeaway": "A Durable Object game server is a state machine redux in the constructor + alarm() dispatch — the 9-phase loop reads as a switch on room.state with timer-driven transitions. The RNG abstraction (interface + SeededRNG for tests) kept the engine deterministic and fully testable without a Workers runtime."
+    },
+    "meta": {
+      "confidence_score": 4
+    }
   }
 ]

@@ -26,3 +26,10 @@
 - **Beneficiary:** Global (State Change)
 - **Upgrades:** 
   - **Selective Sifting:** Upgrading this modifier protects your personal active suit from being converted, allowing you to maintain an asymmetrical tactical advantage over opponents.
+
+### Inverted Polarity
+- **Description:** Track cards that would normally push the matching horse one step backward instead push it one step forward. The fundamental direction of track-card effects is reversed for all players.
+- **Beneficiary:** Global (State Change)
+- **Upgrades:**
+  - **Selective Reversal:** The polarity inversion only applies to cards matching your active suit — other suits resolve normally (backward) as they would on a standard track.
+  - **Chaos Circuit:** Each track card now has a 50% chance (coin-flip) to either push forward or push backward, applied independently per trigger. Future upgrades can shift the odds in your favor.
