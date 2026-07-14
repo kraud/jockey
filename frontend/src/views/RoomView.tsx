@@ -7,6 +7,7 @@ import BiddingView from "./BiddingView";
 import RacingView from "./RacingView";
 import DistributionView from "./DistributionView";
 import DoneView from "./DoneView";
+import CountdownView from "./CountdownView";
 import ResultsView from "./ResultsView";
 
 export default function RoomView() {
@@ -33,7 +34,8 @@ export default function RoomView() {
             return <LobbyView state={state} send={sendFn} />;
           case "BIDDING":
             return <BiddingView state={state} send={sendFn} />;
-          case "SETUP":
+          case "COUNTDOWN":
+            return <CountdownView state={state} />;
           case "RACING":
             return <RacingView state={state} />;
           case "SETTLEMENT":

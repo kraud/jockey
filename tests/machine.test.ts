@@ -13,8 +13,11 @@ import {
   finalizeDistribution,
   markReady,
   assignDrink,
+  startRace,
+  closeBidding,
 } from "../src/game/machine";
 import type { Room } from "../src/game/types";
+import { GameError } from "../src/game/machine";
 
 function makeLobbyRoom(players: Array<{ id: string; name: string; type: "independent" | "hosted" }>): Room {
   let room: Room = {
@@ -32,6 +35,7 @@ function makeLobbyRoom(players: Array<{ id: string; name: string; type: "indepen
     bids: {},
     raceLog: [],
     bidDeadlineMs: null,
+    countdownMs: null,
     distDeadlineMs: null,
     readyDeadlineMs: null,
     raceGapDeckMs: 2000,
@@ -51,6 +55,7 @@ describe("drawNextCard (race)", () => {
     let room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
     room = hostStartRace(room);
     room = placeBid(room, { playerId: "a", suit: "Coins", amount: 2 }, rng);
+    room = startRace(room);
     expect(room.state).toBe("RACING");
 
     const beforePositions = room.horses.map(h => h.position);
@@ -65,6 +70,7 @@ describe("drawNextCard (race)", () => {
     let room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
     room = hostStartRace(room);
     room = placeBid(room, { playerId: "a", suit: "Coins", amount: 2 }, rng);
+    room = startRace(room);
     expect(room.state).toBe("RACING");
 
     // Force Coins to be finished.
@@ -102,6 +108,7 @@ describe("race completion", () => {
     room = hostStartRace(room);
     room = placeBid(room, { playerId: "a", suit: "Coins", amount: 3 }, rng);
     room = placeBid(room, { playerId: "b", suit: "Cups", amount: 2 }, rng);
+    room = startRace(room);
     expect(room.state).toBe("RACING");
 
     let safety = 0;
@@ -124,6 +131,7 @@ describe("race completion", () => {
     let room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
     room = hostStartRace(room);
     room = placeBid(room, { playerId: "a", suit: "Coins", amount: 1 }, rng);
+    room = startRace(room);
 
     let safety = 0;
     while (room.state === "RACING" && safety < 500) {
@@ -140,6 +148,7 @@ describe("regression (track-card flip)", () => {
     let room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
     room = hostStartRace(room);
     room = placeBid(room, { playerId: "a", suit: "Coins", amount: 1 }, rng);
+    room = startRace(room);
 
     let safety = 0;
     while (room.state === "RACING" && safety < 500) {
@@ -170,6 +179,7 @@ describe("full round E2E", () => {
     expect(room.state).toBe("BIDDING"); // 3 of 4, no auto-advance
 
     room = placeBid(room, { playerId: "d", suit: "Clubs", amount: 5 }, rng);
+    room = startRace(room);
     expect(room.state).toBe("RACING"); // all 4 → auto-advance
 
     let safety = 0;
@@ -223,5 +233,25 @@ describe("hostRenamePlayer", () => {
     room = hostRenamePlayer(room, { playerId: "p2", name: "  Bob  " });
     const renamed = room.players.find((p) => p.id === "p2");
     expect(renamed!.name).toBe("Bob");
+  });
+});
+
+describe("countdown", () => {
+  test("closeBidding transitions to COUNTDOWN and startRace to RACING", () => {
+    const rng = new SeededRNG(42);
+    let room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
+    room = hostStartRace(room);
+    room = placeBid(room, { playerId: "a", suit: "Coins", amount: 2 }, rng);
+
+    // closeBidding is auto-invoked by placeBid when all players bid
+    expect(room.state).toBe("COUNTDOWN");
+    expect(room.countdownMs).toBeGreaterThan(Date.now());
+
+    room = startRace(room);
+    expect(room.state).toBe("RACING");
+    expect(room.countdownMs).toBeNull();
+
+    // startRace on non-COUNTDOWN throws
+    expect(() => startRace(room)).toThrow(GameError);
   });
 });

@@ -68,38 +68,6 @@ export default function LobbyView(props: Props) {
                     )}
                   </div>
 
-                  {/* Hosted player bid controls (host only) */}
-                  <Show when={isHost() && p.type === "hosted"}>
-                    <div style="margin-top:0.25rem;display:flex;gap:0.25rem;align-items:center;flex-wrap:wrap;">
-                      <select
-                        value={draftSuit() ?? ""}
-                        onChange={(e) => {
-                          const v = e.currentTarget.value as Suit | "";
-                          if (v) {
-                            setDraftSuit(v);
-                            props.send({ type: "host_set_bid", playerId: p.id, suit: v, amount: draftAmount() });
-                          }
-                        }}
-                      >
-                        <option value="" disabled>Suit</option>
-                        <For each={SUITS}>{(s) => <option value={s}>{s}</option>}</For>
-                      </select>
-                      <select
-                        value={draftAmount()}
-                        onChange={(e) => {
-                          const v = parseInt(e.currentTarget.value, 10);
-                          if (v >= 1 && v <= 5) {
-                            setDraftAmount(v);
-                            if (draftSuit()) {
-                              props.send({ type: "host_set_bid", playerId: p.id, suit: draftSuit()!, amount: v });
-                            }
-                          }
-                        }}
-                      >
-                        <For each={[1, 2, 3, 4, 5]}>{(n) => <option value={n}>{n}</option>}</For>
-                      </select>
-                    </div>
-                  </Show>
 
                   {/* Host rename for hosted players */}
                   <Show when={isHost() && p.type === "hosted"}>

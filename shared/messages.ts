@@ -29,6 +29,7 @@ export interface Player {
 export type Phase =
   | "LOBBY"
   | "BIDDING"
+  | "COUNTDOWN"
   | "SETUP"
   | "RACING"
   | "SETTLEMENT"
@@ -98,6 +99,7 @@ export interface Room {
   bids: Record<string, Bid>;         // playerId → Bid
   raceLog: RaceLogEvent[];
   bidDeadlineMs: number | null;
+  countdownMs: number | null;
   distDeadlineMs: number | null;
   readyDeadlineMs: number | null;
   raceGapDeckMs: number;

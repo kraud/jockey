@@ -167,6 +167,7 @@ export function hostStartRace(room: Room): Room {
   r.state = "BIDDING";
   r.bids = {};
   r.bidDeadlineMs = Date.now() + 30_000;
+  r.countdownMs = null;
   r.distDeadlineMs = null;
   r.readyDeadlineMs = null;
   r.raceLog = [];
@@ -242,11 +243,19 @@ export function closeBidding(room: Room, rng: RNG): Room {
     isFinished: false,
     placement: 0,
   }));
-
-  r.state = "RACING";
+  r.state = "COUNTDOWN";
+  r.countdownMs = Date.now() + 4000;
   r.bidDeadlineMs = null;
   r.raceLog = [];
 
+  return r;
+}
+
+export function startRace(room: Room): Room {
+  assertPhase(room, "COUNTDOWN");
+  const r = structuredClone(room);
+  r.state = "RACING";
+  r.countdownMs = null;
   return r;
 }
 
@@ -444,6 +453,7 @@ export function finishRound(room: Room): Room {
   r.trackCards = [];
   r.deckState = { drawPile: [], discardPile: [] };
   r.bidDeadlineMs = null;
+  r.countdownMs = null;
   r.distDeadlineMs = null;
   r.readyDeadlineMs = null;
 

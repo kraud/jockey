@@ -109,11 +109,30 @@ export default function ResultsView(props: Props) {
       {/* Final track state */}
       <div class="card">
         <h2>Final Track</h2>
-        <div class="horse-grid" style={`grid-template-columns: 50px repeat(${trackLen()}, 1fr);`}>
+        <div class="horse-grid" style={`grid-template-columns: 50px 1fr repeat(${trackLen()}, 1fr) 1fr;`}>
           <div class="horse-cell horse-header" />
+          <div class="horse-cell horse-header" style="font-size:0.7rem;">start</div>
           <For each={Array.from({ length: trackLen() }, (_, i) => i + 1)}>
-            {(step) => <div class="horse-cell horse-header" style="font-size:0.7rem;">{step}</div>}
+            {(step) => {
+              const trackCard = createMemo(() =>
+                room().trackCards.find((tc) => tc.index === step)
+              );
+              const isFlipped = () => trackCard()?.isFlipped ?? false;
+              const cardSuit = () => trackCard()?.suit;
+              return (
+                <div class="horse-cell horse-header" style="font-size:0.7rem;">
+                  {isFlipped() ? (
+                    <span class="track-card-flipped" style={`color:${COLORS[cardSuit()!] || "#888"};font-weight:bold;`}>
+                      {cardSuit()!.substring(0, 2)}
+                    </span>
+                  ) : (
+                    <span>{step}</span>
+                  )}
+                </div>
+              );
+            }}
           </For>
+          <div class="horse-cell horse-header" style="font-size:0.7rem;">end</div>
           <For each={SUITS}>
             {(suit) => {
               const horse = createMemo(() => room().horses.find((h) => h.suit === suit));
@@ -123,25 +142,25 @@ export default function ResultsView(props: Props) {
                   <div class="horse-cell" style={`color:${color()};font-weight:bold;font-size:0.85rem;`}>
                     {suit.substring(0, 2)}
                   </div>
+                  <div class="horse-cell">
+                    {horse() && horse()!.position === 0 && !horse()!.isFinished && (
+                      <span class="horse-knight" style={`color:${color()};`}>
+                        {"\u265E"}
+                      </span>
+                    )}
+                  </div>
                   <For each={Array.from({ length: trackLen() }, (_, i) => i + 1)}>
                     {(step) => {
                       const trackCard = createMemo(() =>
                         room().trackCards.find((tc) => tc.index === step)
                       );
-                      const isFlipped = () => trackCard()?.isFlipped ?? false;
-                      const cardSuit = () => trackCard()?.suit;
                       const isHorseHere = () =>
                         horse() && horse()!.position === step;
                       return (
-                        <div class={`horse-cell${isFlipped() ? " flipped" : ""}`}>
-                          {isFlipped() && (
-                            <span
-                              class="track-card-flipped"
-                              style={`color:${COLORS[cardSuit()!] || "#888"};`}
-                            >
-                              {"\u265E"}
-                            </span>
-                          )}
+                        <div
+                          class={`horse-cell`}
+                          style={`position:relative;`}
+                        >
                           {isHorseHere() && (
                             <span class="horse-knight" style={`color:${color()};`}>
                               {"\u265E"}
@@ -154,6 +173,16 @@ export default function ResultsView(props: Props) {
                       );
                     }}
                   </For>
+                  <div class="horse-cell">
+                    {horse() && horse()!.isFinished && (
+                      <span class="horse-knight" style={`color:${color()};`}>
+                        {"\u265E"}
+                        {horse()!.placement > 0 && (
+                          <sup style="font-size:0.6rem;color:gold;">{horse()!.placement}</sup>
+                        )}
+                      </span>
+                    )}
+                  </div>
                 </>
               );
             }}

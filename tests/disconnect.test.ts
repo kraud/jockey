@@ -5,6 +5,7 @@ import {
   hostStartRace,
   placeBid,
   closeBidding,
+  startRace,
 } from "../src/game/machine";
 import type { Room } from "../src/game/types";
 
@@ -32,6 +33,7 @@ function makeRoom(): Room {
     bids: {},
     raceLog: [],
     bidDeadlineMs: null,
+    countdownMs: null,
     distDeadlineMs: null,
     readyDeadlineMs: null,
     raceGapDeckMs: 2000,
@@ -67,8 +69,8 @@ describe("disconnect policy (DO-layer contract)", () => {
     // Still BIDDING because the machine checks ALL players.
     expect(room.state).toBe("BIDDING");
 
-    // DO handles this: filters to connected, calls closeBidding directly.
     room = closeBidding(room, rng);
+    room = startRace(room);
     expect(room.state).toBe("RACING");
   });
 });

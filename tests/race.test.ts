@@ -5,6 +5,7 @@ import {
   hostAddPlayer,
   hostStartRace,
   placeBid,
+  startRace,
 } from "../src/game/machine";
 import { applyDrawStep, applyFlipStep } from "../src/game/race";
 import type { Room, Card } from "../src/game/types";
@@ -25,6 +26,7 @@ function makeRoom(): Room {
     bids: {},
     raceLog: [],
     bidDeadlineMs: null,
+    countdownMs: null,
     distDeadlineMs: null,
     readyDeadlineMs: null,
     raceGapDeckMs: 2000,
@@ -39,6 +41,7 @@ describe("race: drawNextCard", () => {
     room = hostAddPlayer(room, { id: "p1", name: "Alice", type: "independent", isHost: true });
     room = hostStartRace(room);
     room = placeBid(room, { playerId: "p1", suit: "Coins", amount: 1 }, rng);
+    room = startRace(room);
     expect(room.state).toBe("RACING");
 
     const before = room.horses.map(h => h.position);
@@ -62,6 +65,7 @@ describe("race: drawNextCard", () => {
     room = hostAddPlayer(room, { id: "p1", name: "Alice", type: "independent", isHost: true });
     room = hostStartRace(room);
     room = placeBid(room, { playerId: "p1", suit: "Coins", amount: 1 }, rng);
+    room = startRace(room);
 
     // Force one horse to be finished.
     const coins = room.horses.find(h => h.suit === "Coins")!;
@@ -89,6 +93,7 @@ describe("race: drawNextCard", () => {
     room = hostAddPlayer(room, { id: "p1", name: "Alice", type: "independent", isHost: true });
     room = hostStartRace(room);
     room = placeBid(room, { playerId: "p1", suit: "Coins", amount: 1 }, rng);
+    room = startRace(room);
 
     // Run the race — regression events should appear.
     let safety = 0;
@@ -120,6 +125,7 @@ describe("race: drawNextCard", () => {
     room = hostAddPlayer(room, { id: "p1", name: "Alice", type: "independent", isHost: true });
     room = hostStartRace(room);
     room = placeBid(room, { playerId: "p1", suit: "Coins", amount: 1 }, rng);
+    room = startRace(room);
 
     let safety = 0;
     while (room.state === "RACING" && safety < 500) {
@@ -141,6 +147,7 @@ describe("race: drawNextCard", () => {
     room = hostAddPlayer(room, { id: "p1", name: "Alice", type: "independent", isHost: true });
     room = hostStartRace(room);
     room = placeBid(room, { playerId: "p1", suit: "Coins", amount: 1 }, rng);
+    room = startRace(room);
 
     let safety = 0;
     while (room.state === "RACING" && safety < 500) {
@@ -170,6 +177,7 @@ describe("applyDrawStep / applyFlipStep split", () => {
     room = hostAddPlayer(room, { id: "p1", name: "Alice", type: "independent", isHost: true });
     room = hostStartRace(room);
     room = placeBid(room, { playerId: "p1", suit: "Coins", amount: 1 }, rng);
+    room = startRace(room);
     expect(room.state).toBe("RACING");
 
     // Pop a card from the deck (mirror drawNextCard's deck management)

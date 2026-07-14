@@ -166,5 +166,45 @@
     "meta": {
       "confidence_score": 4
     }
+  },
+  {
+    "id": "20260714-v1-frontend-polish",
+    "timestamp": "2026-07-14T17:30:00Z",
+    "concern": "code",
+    "tags": ["gameplay-loop", "ui-ux", "state-machine", "refactor", "playtest-insight", "bug-hunt"],
+    "milestone": "Playtest V1 Review",
+    "files_affected": [
+      "src/game/types.ts",
+      "shared/messages.ts",
+      "src/game/machine.ts",
+      "src/room.ts",
+      "tests/machine.test.ts",
+      "tests/race.test.ts",
+      "tests/disconnect.test.ts",
+      "frontend/src/views/CountdownView.tsx",
+      "frontend/src/views/LobbyView.tsx",
+      "frontend/src/views/BiddingView.tsx",
+      "frontend/src/views/RoomView.tsx",
+      "frontend/src/views/RacingView.tsx",
+      "frontend/src/views/ResultsView.tsx",
+      "frontend/src/ws/handle.ts",
+      "frontend/src/styles/global.css",
+      ".context/captains_log.json"
+    ],
+    "summary": {
+      "decision_made": "Implemented COUNTDOWN phase between BIDDING and RACING with 3-2-1-GO! display, moved hosted-player bid controls from lobby to bidding view, added start/end columns to track grid, and made horses visually start in 'start' cell and land in 'end' cell when finished. Removed the face-down glyph (U+1F5CC) from the track header row — header cells now show the step number when a track card is not yet flipped and the suit abbreviation in that suit's color when flipped. Fixed the client-side race_log handler to process TRACK_FLIP events and update trackCards[i].isFlipped so the header (and any other component reading the flag) reflects the live flip state.",
+      "options_considered": [
+        "Overlay countdown on RacingView vs standalone CountdownView (chose standalone for simplicity)",
+        "Use isFinished vs position > trackLen for end-cell detection (chose isFinished for correctness with track-flip regressions)",
+        "3s vs 4s countdown (chose 4s for one second per tick)",
+        "Reuse the in-cell flipped span pattern vs a dedicated header helper for the glyph fix (chose reuse — same class, same abbreviation style, zero new CSS)"
+      ],
+      "difficulties_encountered": "Coordinating the new COUNTDOWN phase across the state machine, DO alarm handler, and frontend routing required touching many files simultaneously; test files needed startRace() insertion at every placeBid call that expected an auto-advance to RACING. The header glyph appeared correct at first but the client never received isFlipped=true because the race_log handler only processed HORSE_MOVE/HORSE_FINISH events — TRACK_FLIP events updated the server-side room but were never broadcast as a state_sync, leaving the reactive store with all cards permanently face-down.",
+      "reversals_and_refactors": "closeBidding previously transitioned directly from BIDDING to RACING. Now it transitions to COUNTDOWN and a new startRace function transitions to RACING when the countdown alarm fires. The frontend was refactored from a monolithic file into separate view components (HomeView, BiddingView, RacingView, ResultsView, DistributionView, DoneView) with a shared WebSocket store.",
+      "key_takeaway": "When the server mid-race state lives in a cloned Room but only diff events are broadcast, every event type that mutates server state must have a corresponding client-side reducer. Forgetting one event type (TRACK_FLIP) creates a silent data gap — the DOM never updates because the reactive signal never flips."
+    },
+    "meta": {
+      "confidence_score": 5
+    }
   }
 ]

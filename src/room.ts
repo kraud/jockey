@@ -15,6 +15,7 @@ import {
   runDrawStep,
   runFlipStep,
   drawNextCard,
+  startRace,
   settleRound,
   startDistribution,
   assignDrink,
@@ -188,8 +189,20 @@ export class Room extends DurableObject<Env> {
       this.room = closeBidding(this.room, this.rng);
       this.pendingStage = null;
       await this.persist();
+      this.broadcast({ type: "phase_changed", phase: "COUNTDOWN" });
+      this.broadcast({ type: "state_sync", room: this.room });
+      // Schedule countdown alarm.
+      await this.ctx.storage.setAlarm(this.room.countdownMs!);
+      return;
+    }
+
+    // Countdown → Racing transition.
+    if (this.room.state === "COUNTDOWN" && this.room.countdownMs !== null && now >= this.room.countdownMs) {
+      this.room = startRace(this.room);
+      this.pendingStage = null;
+      await this.persist();
       this.broadcast({ type: "phase_changed", phase: "RACING" });
-      // Schedule first race draw (DRAW stage).
+      this.broadcast({ type: "state_sync", room: this.room });
       await this.ctx.storage.setAlarm(now + this.room.raceGapDeckMs);
       return;
     }
@@ -378,9 +391,11 @@ export class Room extends DurableObject<Env> {
         await this.persist();
         this.broadcast({ type: "bids_updated", bids: Object.values(this.room.bids) });
         // If auto-advance triggered, broadcast phase change and start race.
-        if (this.room.state === "RACING") {
-          this.broadcast({ type: "phase_changed", phase: "RACING" });
-          await this.ctx.storage.setAlarm(Date.now() + this.room.raceGapDeckMs);
+        if (this.room.state === "COUNTDOWN") {
+          this.broadcast({ type: "phase_changed", phase: "COUNTDOWN" });
+          this.broadcast({ type: "state_sync", room: this.room });
+          this.pendingStage = null;
+          await this.ctx.storage.setAlarm(this.room.countdownMs!);
         }
         break;
       }
@@ -395,10 +410,11 @@ export class Room extends DurableObject<Env> {
         await this.persist();
         this.broadcast({ type: "bids_updated", bids: Object.values(this.room.bids) });
 
-        if (this.room.state === "RACING") {
-          this.broadcast({ type: "phase_changed", phase: "RACING" });
+        if (this.room.state === "COUNTDOWN") {
+          this.broadcast({ type: "phase_changed", phase: "COUNTDOWN" });
+          this.broadcast({ type: "state_sync", room: this.room });
           this.pendingStage = null;
-          await this.ctx.storage.setAlarm(Date.now() + this.room.raceGapDeckMs);
+          await this.ctx.storage.setAlarm(this.room.countdownMs!);
         }
         break;
       }
@@ -485,10 +501,11 @@ export class Room extends DurableObject<Env> {
         await this.persist();
         this.broadcast({ type: "bids_updated", bids: Object.values(this.room.bids) });
 
-        if (this.room.state === "RACING") {
-          this.broadcast({ type: "phase_changed", phase: "RACING" });
+        if (this.room.state === "COUNTDOWN") {
+          this.broadcast({ type: "phase_changed", phase: "COUNTDOWN" });
+          this.broadcast({ type: "state_sync", room: this.room });
           this.pendingStage = null;
-          await this.ctx.storage.setAlarm(Date.now() + this.room.raceGapDeckMs);
+          await this.ctx.storage.setAlarm(this.room.countdownMs!);
         }
         break;
       }
@@ -509,8 +526,9 @@ export class Room extends DurableObject<Env> {
         this.room = closeBidding(this.room, this.rng);
         this.pendingStage = null;
         await this.persist();
-        this.broadcast({ type: "phase_changed", phase: "RACING" });
-        await this.ctx.storage.setAlarm(now + this.room.raceGapDeckMs);
+        this.broadcast({ type: "phase_changed", phase: "COUNTDOWN" });
+        this.broadcast({ type: "state_sync", room: this.room });
+        await this.ctx.storage.setAlarm(this.room.countdownMs!);
         break;
 
       case "SETTLEMENT": {
@@ -593,6 +611,7 @@ export class Room extends DurableObject<Env> {
       bids: {},
       raceLog: [],
       bidDeadlineMs: null,
+      countdownMs: null,
       distDeadlineMs: null,
       readyDeadlineMs: null,
       raceGapDeckMs: 2000,

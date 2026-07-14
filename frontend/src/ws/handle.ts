@@ -114,6 +114,7 @@ export function applyServerMessage(state: RoomState, msg: ServerMessage): RoomSt
       if (!state.room) return state;
       const raceLog = [...state.room.raceLog];
       const horses = state.room.horses.map(h => ({ ...h }));
+      const trackCards = state.room.trackCards.map(tc => ({ ...tc }));
       for (const e of msg.events) {
         raceLog.push(e);
         if (e.type === "HORSE_MOVE") {
@@ -127,10 +128,14 @@ export function applyServerMessage(state: RoomState, msg: ServerMessage): RoomSt
             h.placement = e.placement;
           }
         }
+        if (e.type === "TRACK_FLIP") {
+          const tc = trackCards.find(tc => tc.index === e.index);
+          if (tc) tc.isFlipped = true;
+        }
       }
       return {
         ...state,
-        room: { ...state.room, raceLog, horses },
+        room: { ...state.room, raceLog, horses, trackCards },
       };
     }
 

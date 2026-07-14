@@ -16,6 +16,7 @@ export default function BiddingView(props: Props) {
     if (!ms) return null;
     return Math.max(0, Math.ceil((ms - Date.now()) / 1000));
   };
+  const isHost = () => props.state.playerId === room().hostId;
 
   return (
     <>
@@ -45,16 +46,66 @@ export default function BiddingView(props: Props) {
               const hasBid = !!room().bids[p.id];
               return (
                 <li style={hasBid ? "color:#40f040;" : ""}>
-                  {p.name}: {hasBid ? "confirmed" : "pending"}
+                  {p.name}: {hasBid ? "ready" : "pending"}
                 </li>
               );
             }}
           </For>
         </ul>
       </div>
+
+      {/* Host Bid Controls card */}
+      <Show when={isHost()}>
+        <div class="card">
+          <h2>Host Bid Controls</h2>
+          <For each={room().players.filter(p => p.type === "hosted")}>
+            {(p) => {
+              const existingBid = () => room().bids[p.id];
+              const [draftSuit, setDraftSuit] = createSignal<Suit | null>(existingBid()?.suit ?? null);
+              const [draftAmount, setDraftAmount] = createSignal(existingBid()?.amount ?? 1);
+              return (
+                <div style="margin-top:0.5rem;display:flex;gap:0.25rem;align-items:center;flex-wrap:wrap;">
+                  <span style="font-size:0.85rem;">{p.name}</span>
+                  <select
+                    value={draftSuit() ?? ""}
+                    onChange={(e) => {
+                      const v = e.currentTarget.value as Suit | "";
+                      if (v) {
+                        setDraftSuit(v);
+                        props.send({ type: "host_set_bid", playerId: p.id, suit: v, amount: draftAmount() });
+                      }
+                    }}
+                  >
+                    <option value="" disabled>Suit</option>
+                    <For each={SUITS}>{(s) => <option value={s}>{s}</option>}</For>
+                  </select>
+                  <select
+                    value={draftAmount()}
+                    onChange={(e) => {
+                      const v = parseInt(e.currentTarget.value, 10);
+                      if (v >= 1 && v <= 5) {
+                        setDraftAmount(v);
+                        if (draftSuit()) {
+                          props.send({ type: "host_set_bid", playerId: p.id, suit: draftSuit()!, amount: v });
+                        }
+                      }
+                    }}
+                  >
+                    <For each={[1, 2, 3, 4, 5]}>{(n) => <option value={n}>{n}</option>}</For>
+                  </select>
+                  {existingBid() && (
+                    <span style="font-size:0.75rem;color:#40f040;">ready</span>
+                  )}
+                </div>
+              );
+            }}
+          </For>
+        </div>
+      </Show>
     </>
   );
 }
+
 
 function BidForm(props: Props) {
   const [suit, setSuit] = createSignal<Suit | null>(null);
