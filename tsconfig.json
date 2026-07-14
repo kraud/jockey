@@ -6,13 +6,15 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "lib": ["ES2022", "WebWorker"],
+    "paths": {
+      "@cdc/shared": ["./shared"]
+    },
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": ".",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "outDir": "./dist",
-    "rootDir": "./src"
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "frontend"]

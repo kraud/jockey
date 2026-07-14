@@ -59,7 +59,11 @@ function finishedCount(room: Room): number {
  * > is 4th.  A horse that has finished cannot be moved by subsequent deck
  * > draws or track-card flips.
  */
-export function applyDraw(room: Room, card: Card, _rng: RNG): Room {
+/**
+ * Stage 1 of a draw: deck draw event + horse advance + finish detection.
+ * Does NOT run the track-card flip or regression.
+ */
+export function applyDrawStep(room: Room, card: Card): Room {
   const r = structuredClone(room);
   const suit = card.suit;
   const horse = r.horses.find((h) => h.suit === suit)!;
@@ -89,7 +93,7 @@ export function applyDraw(room: Room, card: Card, _rng: RNG): Room {
     horse.isFinished = true;
     r.raceLog.push({ type: "HORSE_FINISH", suit, placement: nextPlacement });
 
-    // Third finish → race over.
+    // Third finish -> race over.
     if (nextPlacement === 3) {
       r.state = "SETTLEMENT";
       r.raceLog.push({
@@ -100,19 +104,20 @@ export function applyDraw(room: Room, card: Card, _rng: RNG): Room {
     }
   }
 
-  // Fourth finish also needed — but that can only happen after 3rd,
-  // so the race is already over.  We handle the 4th horse separately
-  // in settleRound which assigns placement 4 to the remaining horse.
+  return r;
+}
 
-  // Step 5: track-card flip (regression).
+/**
+ * Stage 2 of a draw: track-card flip and regression.
+ * Operates on the room after applyDrawStep has run.
+ */
+export function applyFlipStep(room: Room): Room {
+  const r = structuredClone(room);
+
   // Find the last-placed horse among non-finished horses.
   const lpSuit = lastPlacedHorse(r);
   if (lpSuit !== null) {
     const lastPlaced = r.horses.find((h) => h.suit === lpSuit)!;
-    // Flip the first (lowest-index) unflipped track-card whose
-    // index <= lastPlacedHorse.position.
-    // In V1 single-step moves, this is always the card at exactly
-    // the last-placed horse's position.
     const flipCard = r.trackCards.find(
       (tc) => !tc.isFlipped && tc.index <= lastPlaced.position,
     );
@@ -121,7 +126,6 @@ export function applyDraw(room: Room, card: Card, _rng: RNG): Room {
       flipCard.isFlipped = true;
       const flipSuit = flipCard.suit;
 
-      // Check if flip-suit horse is already finished.
       const flipHorse = r.horses.find((h) => h.suit === flipSuit)!;
       const flipIgnored = flipHorse.isFinished;
 
@@ -133,7 +137,6 @@ export function applyDraw(room: Room, card: Card, _rng: RNG): Room {
       });
 
       // Regression: matching horse moves -1, clamped to 0.
-      // "regression is not a re-passing" — no further flip check.
       if (!flipIgnored) {
         const regFrom = flipHorse.position;
         flipHorse.position = Math.max(0, flipHorse.position - 1);
@@ -151,4 +154,13 @@ export function applyDraw(room: Room, card: Card, _rng: RNG): Room {
   }
 
   return r;
+}
+
+/**
+ * Full draw: deck draw + horse advance + track-card flip.
+ * Composes applyDrawStep then applyFlipStep.
+ * Maintained for backward compatibility with existing callers.
+ */
+export function applyDraw(room: Room, card: Card, _rng: RNG): Room {
+  return applyFlipStep(applyDrawStep(room, card));
 }

@@ -7,11 +7,17 @@
     "dev": "wrangler dev",
     "test": "bun test tests/",
     "deploy": "wrangler deploy",
-    "build:frontend": "bun build frontend/main.ts --outdir=frontend/dist"
+    "build": "tsc -p tsconfig.json --noEmit && cd frontend && bunx vite build",
+    "dev:frontend": "cd frontend && bunx vite",
+    "build:frontend": "cd frontend && bunx vite build"
   },
   "devDependencies": {
-    "wrangler": "^4.5.0",
+    "@cloudflare/workers-types": "^4.20250109.0",
+    "@solidjs/router": "^0.16.1",
+    "solid-js": "^1.9.14",
     "typescript": "^5.7.0",
-    "@cloudflare/workers-types": "^4.20250109.0"
+    "vite": "^8.1.4",
+    "vite-plugin-solid": "^2.11.12",
+    "wrangler": "^4.5.0"
   }
 }

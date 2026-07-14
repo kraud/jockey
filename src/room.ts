@@ -6,9 +6,14 @@ import {
   hostRemovePlayer,
   hostSetLock,
   hostSetTrackLength,
+  hostSetRacePacing,
+  hostRenamePlayer,
+  selfRename,
   hostStartRace,
   placeBid,
   closeBidding,
+  runDrawStep,
+  runFlipStep,
   drawNextCard,
   settleRound,
   startDistribution,
@@ -27,6 +32,8 @@ import { computeSettlement } from "./game/settlement";
 
 // ── Constants ────────────────────────────────────────────────────────
 
+// Pacing is now per-room (raceGapDeckMs / raceGapTrackMs); this constant
+// is kept as a fallback and for backward-compatible tests.
 const RACE_DRAW_INTERVAL_MS = 750;
 const BID_TIMEOUT_MS = 30_000;
 const DIST_TIMEOUT_MS = 30_000;
@@ -50,6 +57,7 @@ export class Room extends DurableObject<Env> {
   private room: Room | null = null;
   private rng = new MathRNG();
   private pendingRoomCode: string | null = null;
+  private pendingStage: "DRAW" | "FLIP" | null = null;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -178,30 +186,72 @@ export class Room extends DurableObject<Env> {
     // Bidding timeout.
     if (this.room.state === "BIDDING" && this.room.bidDeadlineMs !== null && now >= this.room.bidDeadlineMs) {
       this.room = closeBidding(this.room, this.rng);
+      this.pendingStage = null;
       await this.persist();
       this.broadcast({ type: "phase_changed", phase: "RACING" });
-      // Schedule first race draw.
-      await this.ctx.storage.setAlarm(now + RACE_DRAW_INTERVAL_MS);
+      // Schedule first race draw (DRAW stage).
+      await this.ctx.storage.setAlarm(now + this.room.raceGapDeckMs);
       return;
     }
 
-    // Race: draw one card.
+    // Race: two-stage alarm (DRAW → FLIP).
     if (this.room.state === "RACING") {
+      if (this.pendingStage !== "FLIP") {
+        // Stage 1: draw a card.
+        const beforeLen = this.room.raceLog.length;
+        this.room = runDrawStep(this.room, this.rng);
+        await this.persist();
+
+        const drawEvents = this.room.raceLog.slice(beforeLen);
+        this.broadcast({ type: "race_log", events: drawEvents });
+
+        if (this.room.state === "SETTLEMENT") {
+          // Race ended during draw — settle immediately.
+          const beforeSettle = this.room.raceLog.length;
+          this.room = settleRound(this.room);
+          await this.persist();
+
+          const settleEvents = this.room.raceLog.slice(beforeSettle);
+          this.broadcast({ type: "race_log", events: settleEvents });
+
+          const settlementResults = computeSettlement(
+            Object.values(this.room.bids),
+            placements(this.room),
+            this.room.trackLength,
+          );
+
+          this.broadcast({
+            type: "race_ended",
+            placements: placements(this.room),
+            settlement: settlementResults,
+          });
+          this.pendingStage = null;
+          // Do NOT auto-advance to DISTRIBUTION — hold at SETTLEMENT
+          // for the host to click "Continue to Distribution".
+          return;
+        }
+
+        // Schedule flip stage.
+        this.pendingStage = "FLIP";
+        await this.ctx.storage.setAlarm(now + this.room.raceGapDeckMs);
+        return;
+      }
+
+      // Stage 2: flip track card and regression.
       const beforeLen = this.room.raceLog.length;
-      this.room = drawNextCard(this.room, this.rng);
+      this.room = runFlipStep(this.room);
+      this.pendingStage = null;
       await this.persist();
 
-      // Broadcast exactly the new events from this draw.
-      const drawEvents = this.room.raceLog.slice(beforeLen);
-      this.broadcast({ type: "race_log", events: drawEvents });
+      const flipEvents = this.room.raceLog.slice(beforeLen);
+      this.broadcast({ type: "race_log", events: flipEvents });
 
       if (this.room.state === "SETTLEMENT") {
-        // Race ended — settle and start distribution.
+        // Race ended after flip — settle.
         const beforeSettle = this.room.raceLog.length;
         this.room = settleRound(this.room);
         await this.persist();
 
-        // Broadcast settlement log events.
         const settleEvents = this.room.raceLog.slice(beforeSettle);
         this.broadcast({ type: "race_log", events: settleEvents });
 
@@ -216,15 +266,12 @@ export class Room extends DurableObject<Env> {
           placements: placements(this.room),
           settlement: settlementResults,
         });
-        this.room = startDistribution(this.room);
-        await this.persist();
-        this.broadcast({ type: "phase_changed", phase: "DISTRIBUTION" });
-        // Schedule distribution alarm.
-        await this.ctx.storage.setAlarm(this.room.distDeadlineMs!);
-      } else {
-        // Schedule next draw.
-        await this.ctx.storage.setAlarm(now + RACE_DRAW_INTERVAL_MS);
+        // Hold at SETTLEMENT; host advances to DISTRIBUTION.
+        return;
       }
+
+      // Schedule next draw cycle.
+      await this.ctx.storage.setAlarm(now + this.room.raceGapTrackMs);
       return;
     }
 
@@ -249,6 +296,7 @@ export class Room extends DurableObject<Env> {
           p.drinks.isReady = true;
         }
       }
+      this.pendingStage = null;
       this.room = finishRound(this.room);
       await this.persist();
       // Also delete alarm so it doesn't re-fire.
@@ -312,6 +360,7 @@ export class Room extends DurableObject<Env> {
 
       case "host_start_race":
         this.assertHost(att);
+        this.pendingStage = null;
         this.room = hostStartRace(this.room);
         await this.persist();
         // Schedule bid alarm.
@@ -328,11 +377,10 @@ export class Room extends DurableObject<Env> {
         }, this.rng);
         await this.persist();
         this.broadcast({ type: "bids_updated", bids: Object.values(this.room.bids) });
-
         // If auto-advance triggered, broadcast phase change and start race.
         if (this.room.state === "RACING") {
           this.broadcast({ type: "phase_changed", phase: "RACING" });
-          await this.ctx.storage.setAlarm(Date.now() + RACE_DRAW_INTERVAL_MS);
+          await this.ctx.storage.setAlarm(Date.now() + this.room.raceGapDeckMs);
         }
         break;
       }
@@ -349,7 +397,8 @@ export class Room extends DurableObject<Env> {
 
         if (this.room.state === "RACING") {
           this.broadcast({ type: "phase_changed", phase: "RACING" });
-          await this.ctx.storage.setAlarm(Date.now() + RACE_DRAW_INTERVAL_MS);
+          this.pendingStage = null;
+          await this.ctx.storage.setAlarm(Date.now() + this.room.raceGapDeckMs);
         }
         break;
       }
@@ -401,6 +450,49 @@ export class Room extends DurableObject<Env> {
         break;
       }
 
+
+      case "host_set_race_pacing": {
+        this.assertHost(att);
+        this.room = hostSetRacePacing(this.room, { gapDeckMs: msg.gapDeckMs, gapTrackMs: msg.gapTrackMs });
+        await this.persist();
+        this.broadcast({ type: "state_sync", room: this.room });
+        break;
+      }
+
+      case "host_set_player_name": {
+        this.assertHost(att);
+        this.room = hostRenamePlayer(this.room, { playerId: msg.playerId, name: msg.name });
+        await this.persist();
+        this.broadcast({ type: "state_sync", room: this.room });
+        break;
+      }
+
+      case "change_name": {
+        this.assertPlayer(att);
+        this.room = selfRename(this.room, { playerId: att!.playerId, name: msg.name });
+        await this.persist();
+        this.broadcast({ type: "state_sync", room: this.room });
+        break;
+      }
+
+      case "host_set_bid": {
+        this.assertHost(att);
+        this.room = placeBid(this.room, {
+          playerId: msg.playerId,
+          suit: msg.suit,
+          amount: msg.amount,
+        }, this.rng);
+        await this.persist();
+        this.broadcast({ type: "bids_updated", bids: Object.values(this.room.bids) });
+
+        if (this.room.state === "RACING") {
+          this.broadcast({ type: "phase_changed", phase: "RACING" });
+          this.pendingStage = null;
+          await this.ctx.storage.setAlarm(Date.now() + this.room.raceGapDeckMs);
+        }
+        break;
+      }
+
       default:
         this.send(ws, { type: "error", code: "UNKNOWN", message: "Unhandled message type" });
     }
@@ -415,10 +507,20 @@ export class Room extends DurableObject<Env> {
     switch (this.room.state) {
       case "BIDDING":
         this.room = closeBidding(this.room, this.rng);
+        this.pendingStage = null;
         await this.persist();
         this.broadcast({ type: "phase_changed", phase: "RACING" });
-        await this.ctx.storage.setAlarm(now + RACE_DRAW_INTERVAL_MS);
+        await this.ctx.storage.setAlarm(now + this.room.raceGapDeckMs);
         break;
+
+      case "SETTLEMENT": {
+        // Advance from results view to distribution.
+        this.room = startDistribution(this.room);
+        await this.persist();
+        this.broadcast({ type: "phase_changed", phase: "DISTRIBUTION" });
+        await this.ctx.storage.setAlarm(this.room.distDeadlineMs!);
+        break;
+      }
 
       case "DISTRIBUTION": {
         const beforeLen = this.room.raceLog.length;
@@ -437,6 +539,7 @@ export class Room extends DurableObject<Env> {
           if (!p.drinks.isReady) p.drinks.isReady = true;
         }
         this.room = finishRound(this.room);
+        this.pendingStage = null;
         await this.persist();
         await this.ctx.storage.deleteAlarm();
         this.broadcast({ type: "phase_changed", phase: "LOBBY" });
@@ -444,7 +547,6 @@ export class Room extends DurableObject<Env> {
         break;
 
       default:
-        // Advancing from LOBBY, SETUP, RACING, SETTLEMENT is not meaningful.
         break;
     }
   }
@@ -493,6 +595,8 @@ export class Room extends DurableObject<Env> {
       bidDeadlineMs: null,
       distDeadlineMs: null,
       readyDeadlineMs: null,
+      raceGapDeckMs: 2000,
+      raceGapTrackMs: 1000,
     };
   }
 
@@ -559,6 +663,7 @@ export class Room extends DurableObject<Env> {
     const allReady = this.room.players.every((p) => p.drinks.isReady);
     if (!allReady) return;
 
+    this.pendingStage = null;
     this.room = finishRound(this.room);
     await this.persist();
     await this.ctx.storage.deleteAlarm();

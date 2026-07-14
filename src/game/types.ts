@@ -100,6 +100,8 @@ export interface Room {
   bidDeadlineMs: number | null;
   distDeadlineMs: number | null;
   readyDeadlineMs: number | null;
+  raceGapDeckMs: number;
+  raceGapTrackMs: number;
 }
 
 // ── Settlement result ────────────────────────────────────────────────

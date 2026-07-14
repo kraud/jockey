@@ -2,7 +2,7 @@
 
 A web-based multiplayer horse-race betting game played with a Spanish deck of cards. Pure chance, no skill — the entertainment comes from the race itself and the drinking-game economy layered on top.
 
-Built as a prototype: no framework, minimal dependencies, deployable at near-zero cost.
+Built as a Vite + SolidJS SPA with a Cloudflare Workers + Durable Objects backend. Message types shared via `shared/messages.ts` — no type drift between frontend and backend.
 
 ## Current status
 
@@ -24,7 +24,36 @@ Phase 1 complete (gameplay loop & domain definition). Next: architecture selecti
 
 ```
 .context/        — Design docs, roadmap, glossary
+shared/          — Shared types (messages.ts) used by both backend and frontend
+src/             — Cloudflare Worker + DO backend (game logic)
+frontend/
+  src/           — SolidJS components, views, WebSocket store
+  index.html     — Vite HTML shell
+  vite.config.ts — Vite config with dev proxy
 ```
+
+## Development
+
+Run two terminals:
+
+```bash
+# Terminal 1: Backend (Wrangler dev server)
+bun run dev
+
+# Terminal 2: Frontend (Vite dev server)
+bun run dev:frontend
+```
+
+Vite proxies `/api` and `/ws` to the Wrangler dev server, so the frontend uses relative URLs (`fetch('/api/room', …)`, `new WebSocket('ws://' + location.host + '/ws?room=…')`).
+
+## Build
+
+```bash
+bun run build      # TypeScript check + Vite production build
+bun run build:frontend  # Vite production build only
+```
+
+Build output is in `frontend/dist/`, deployed to Cloudflare Pages.
 
 ## License
 

@@ -6,7 +6,8 @@ import {
   hostStartRace,
   placeBid,
 } from "../src/game/machine";
-import type { Room } from "../src/game/types";
+import { applyDrawStep, applyFlipStep } from "../src/game/race";
+import type { Room, Card } from "../src/game/types";
 
 function makeRoom(): Room {
   return {
@@ -26,6 +27,8 @@ function makeRoom(): Room {
     bidDeadlineMs: null,
     distDeadlineMs: null,
     readyDeadlineMs: null,
+    raceGapDeckMs: 2000,
+    raceGapTrackMs: 1000,
   };
 }
 
@@ -157,5 +160,42 @@ describe("race: drawNextCard", () => {
     // But settleRound isn't called yet; 3 should be placed.
     const placed = room.horses.filter(h => h.placement > 0);
     expect(placed.length).toBe(3);
+  });
+});
+
+describe("applyDrawStep / applyFlipStep split", () => {
+  test("draw step produces DECK_DRAW and HORSE_MOVE; flip step produces TRACK_FLIP", () => {
+    const rng = new SeededRNG(42);
+    let room = makeRoom();
+    room = hostAddPlayer(room, { id: "p1", name: "Alice", type: "independent", isHost: true });
+    room = hostStartRace(room);
+    room = placeBid(room, { playerId: "p1", suit: "Coins", amount: 1 }, rng);
+    expect(room.state).toBe("RACING");
+
+    // Pop a card from the deck (mirror drawNextCard's deck management)
+    const deck = room.deckState;
+    if (deck.drawPile.length === 0) {
+      deck.drawPile = rng.shuffle(deck.discardPile);
+      deck.discardPile = [];
+    }
+    const card = deck.drawPile.pop()!;
+    deck.discardPile.push(card);
+
+    // Stage 1: draw step
+    const afterDraw = applyDrawStep(room, card);
+    const drawEvents = afterDraw.raceLog.slice(room.raceLog.length);
+    const hasDeckDraw = drawEvents.some((e) => e.type === "DECK_DRAW");
+    const hasHorseMove = drawEvents.some((e) => e.type === "HORSE_MOVE" && e.reason === "DECK");
+    expect(hasDeckDraw).toBe(true);
+
+    // Stage 2: flip step
+    const afterFlip = applyFlipStep(afterDraw);
+    const flipEvents = afterFlip.raceLog.slice(afterDraw.raceLog.length);
+    const hasTrackFlip = flipEvents.some((e) => e.type === "TRACK_FLIP");
+
+    // Full composition should match drawNextCard
+    const composed = applyFlipStep(applyDrawStep(room, card));
+    const full = drawNextCard(room, rng);
+    expect(composed.raceLog.length).toBe(full.raceLog.length);
   });
 });

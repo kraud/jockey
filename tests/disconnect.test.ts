@@ -34,6 +34,8 @@ function makeRoom(): Room {
     bidDeadlineMs: null,
     distDeadlineMs: null,
     readyDeadlineMs: null,
+    raceGapDeckMs: 2000,
+    raceGapTrackMs: 1000,
   };
 }
 

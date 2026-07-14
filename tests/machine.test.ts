@@ -4,6 +4,8 @@ import {
   drawNextCard,
   finishRound,
   hostAddPlayer,
+  hostSetRacePacing,
+  hostRenamePlayer,
   hostStartRace,
   placeBid,
   settleRound,
@@ -32,6 +34,8 @@ function makeLobbyRoom(players: Array<{ id: string; name: string; type: "indepen
     bidDeadlineMs: null,
     distDeadlineMs: null,
     readyDeadlineMs: null,
+    raceGapDeckMs: 2000,
+    raceGapTrackMs: 1000,
   };
 
   for (const p of players) {
@@ -201,5 +205,23 @@ describe("full round E2E", () => {
     expect(room.bids).toEqual({});
     expect(room.raceLog).toEqual([]);
     expect(room.players).toHaveLength(4);
+  });
+});
+describe("hostSetRacePacing", () => {
+  test("sets pacing fields on a lobby room", () => {
+    let room = makeLobbyRoom([{ id: "host", name: "Host", type: "independent" }]);
+    room = hostSetRacePacing(room, { gapDeckMs: 3000, gapTrackMs: 1500 });
+    expect(room.raceGapDeckMs).toBe(3000);
+    expect(room.raceGapTrackMs).toBe(1500);
+  });
+});
+
+describe("hostRenamePlayer", () => {
+  test("changes a player's name", () => {
+    let room = makeLobbyRoom([{ id: "host", name: "Host", type: "independent" }]);
+    room = hostAddPlayer(room, { id: "p2", name: "Alice", type: "independent", isHost: false });
+    room = hostRenamePlayer(room, { playerId: "p2", name: "  Bob  " });
+    const renamed = room.players.find((p) => p.id === "p2");
+    expect(renamed!.name).toBe("Bob");
   });
 });

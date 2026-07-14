@@ -77,11 +77,11 @@ sequenceDiagram
 
 ### 1. Cloudflare Pages — The Frontend
 
-**What it is:** A static hosting service. You upload your HTML, CSS, and JavaScript files, and Cloudflare serves them from servers around the world. It's like GitHub Pages or Netlify, but on Cloudflare's network.
+**What it is:** A static hosting service. You upload your built HTML, CSS, and JavaScript files, and Cloudflare serves them from servers around the world. It's like GitHub Pages or Netlify, but on Cloudflare's network.
 
 **What it does for us:** Serves the single-page application (SPA) — the create/join room screen, the game board with horses and track, the bidding interface, the drink distribution UI. All game logic visible to the player runs here (rendering animations, handling button clicks), but the *authoritative* game logic runs in the Durable Object.
 
-**Why not a framework like React or Vue?:** We can use one if you want — Pages doesn't care. But for this prototype, plain TypeScript or a lightweight library (like Preact or Solid) keeps the bundle small and fast.
+**The frontend stack:** Vite + SolidJS SPA, built from `frontend/` and output to `frontend/dist/`. Message types (ClientMessage, ServerMessage) are shared with the backend via the top‑level `shared/messages.ts` module — no type drift between frontend and backend. The Vite dev server proxies `/api` and `/ws` to the local Wrangler dev server during development.
 
 ### 2. Cloudflare Workers — The Router
 

@@ -16,7 +16,7 @@ import {
   TRACK_MAX,
   TRACK_MIN,
 } from "./types";
-import { applyDraw, placements } from "./race";
+import { applyDraw, applyDrawStep, applyFlipStep, placements } from "./race";
 import { computeSettlement } from "./settlement";
 import { makeTrack, makeDeckState } from "./setup";
 
@@ -122,6 +122,45 @@ export function hostSetTrackLength(
   return r;
 }
 
+export function hostSetRacePacing(
+  room: Room,
+  params: { gapDeckMs: number; gapTrackMs: number },
+): Room {
+  assertPhase(room, "LOBBY");
+  const r = structuredClone(room);
+  r.raceGapDeckMs = params.gapDeckMs;
+  r.raceGapTrackMs = params.gapTrackMs;
+  return r;
+}
+
+export function hostRenamePlayer(
+  room: Room,
+  params: { playerId: string; name: string },
+): Room {
+  const player = findPlayer(room, params.playerId);
+  if (!player) {
+    throw new GameError("PLAYER_NOT_FOUND", `Player ${params.playerId} not found`);
+  }
+  const r = structuredClone(room);
+  const target = findPlayer(r, params.playerId);
+  target.name = params.name.trim();
+  return r;
+}
+
+export function selfRename(
+  room: Room,
+  params: { playerId: string; name: string },
+): Room {
+  const player = findPlayer(room, params.playerId);
+  if (!player) {
+    throw new GameError("PLAYER_NOT_FOUND", `Player ${params.playerId} not found`);
+  }
+  const r = structuredClone(room);
+  const target = findPlayer(r, params.playerId);
+  target.name = params.name.trim();
+  return r;
+}
+
 export function hostStartRace(room: Room): Room {
   assertPhase(room, "LOBBY");
   const r = structuredClone(room);
@@ -214,12 +253,11 @@ export function closeBidding(room: Room, rng: RNG): Room {
 // ── RACING ───────────────────────────────────────────────────────────
 
 /**
- * Draw the next card from the deck and apply it to the race.
- * Returns the updated room.  If the race ends (3rd horse finishes),
- * the room state will be SETTLEMENT and the caller should call
- * `settleRound` next.
+ * Stage 1 of a race tick: pop the next card from the deck and apply it.
+ * Returns the room with draw events applied.  The caller must follow up
+ * with runFlipStep after the deck gap elapses.
  */
-export function drawNextCard(room: Room, rng: RNG): Room {
+export function runDrawStep(room: Room, rng: RNG): Room {
   assertPhase(room, "RACING");
 
   const r = structuredClone(room);
@@ -239,7 +277,23 @@ export function drawNextCard(room: Room, rng: RNG): Room {
   const card = deck.drawPile.pop()!;
   deck.discardPile.push(card);
 
-  return applyDraw(r, card, rng);
+  return applyDrawStep(r, card);
+}
+
+/**
+ * Stage 2 of a race tick: flip a track card and apply regression.
+ */
+export function runFlipStep(room: Room): Room {
+  return applyFlipStep(room);
+}
+
+/**
+ * Draw the next card from the deck and apply it to the race.
+ * Full composition: draw step + flip step in one call.
+ * Maintained for backward compatibility with existing callers and tests.
+ */
+export function drawNextCard(room: Room, rng: RNG): Room {
+  return runFlipStep(runDrawStep(room, rng));
 }
 
 // ── SETTLEMENT ───────────────────────────────────────────────────────

@@ -1,0 +1,7 @@
+{
+  "name": "@cdc/shared",
+  "type": "module",
+  "exports": {
+    "./messages": "./messages.ts"
+  }
+}

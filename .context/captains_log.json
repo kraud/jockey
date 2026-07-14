@@ -65,8 +65,7 @@
     "meta": {
       "confidence_score": 5
     }
-  }
-,
+  },
   {
     "id": "20260713-repo-layout-decision",
     "timestamp": "2026-07-13T14:23:25Z",
@@ -124,6 +123,45 @@
       "difficulties_encountered": "Track-card flip / regression rule (Step 5) is the most subtle engine path: 'regression is not a re-passing' means one draw → at most one flip + one regression, no cascading. WebSocket Hibernation API requires compat flag removal (web_socket_hibernation doesn't exist as a flag; hibernation is native in modern Workers). Browser tool sandbox can't reach localhost for D5 smoke — relied on C4 eval smoke (create room → WS → bid → race streaming → settlement) as verification gate.",
       "reversals_and_refactors": "Advisory-driven fix: race pacing redesigned from synchronous loop to alarm-driven before room.ts was written. Room code forwarding added mid-implementation (DO didn't receive the code). collision detection in /init fixed from always-200 to 409-on-collision.",
       "key_takeaway": "A Durable Object game server is a state machine redux in the constructor + alarm() dispatch — the 9-phase loop reads as a switch on room.state with timer-driven transitions. The RNG abstraction (interface + SeededRNG for tests) kept the engine deterministic and fully testable without a Workers runtime."
+    },
+    "meta": {
+      "confidence_score": 4
+    }
+  },
+  {
+    "id": "20260714-ui-overhaul-race-pacing",
+    "timestamp": "2026-07-14T11:00:00Z",
+    "concern": "code",
+    "tags": ["gameplay-loop", "ui-ux", "state-machine", "networking", "refactor", "milestone"],
+    "milestone": "UI Overhaul + Race Pacing + Host Controls",
+    "files_affected": [
+      "shared/messages.ts",
+      "src/game/types.ts",
+      "src/game/machine.ts",
+      "src/game/race.ts",
+      "src/room.ts",
+      "frontend/src/views/HomeView.tsx",
+      "frontend/src/views/LobbyView.tsx",
+      "frontend/src/views/RacingView.tsx",
+      "frontend/src/views/ResultsView.tsx",
+      "frontend/src/views/RoomView.tsx",
+      "frontend/src/views/DoneView.tsx",
+      "frontend/src/styles/global.css",
+      "tests/machine.test.ts",
+      "tests/race.test.ts"
+    ],
+    "summary": {
+      "decision_made": "Delivered 14 changes from V1 post-playtest UX audit: (1) two-stage race alarm (DRAW/FLIP) with per-room configurable pacing (raceGapDeckMs/raceGapTrackMs, default 2000/1000), replacing hardcoded 750ms constant — gap lands between deck-draw and track-flip so spectators see a breath between moves; (2) SETTLEMENT phase now holds at the race-end snapshot instead of auto-advancing to DISTRIBUTION — host clicks Continue to advance; (3) home screen split into sequential name-then-room flow with sessionStorage persistence; (4) lobby restructured with player list first, inline host bid controls for hosted players, pacing editor, rename-in-place for self and hosted players, Remove button replacing Kick; (5) RacingView replaced absolute-positioned dots with a CSS-grid text track using ♘ knights in per-suit colours (gold Coins, brown Cups, gray Swords, green Clubs); (6) race log grouped into turn-delimited blocks by DECK_DRAW events; (7) new ResultsView shows final track, placements, settlement, player list; (8) DoneView now persists the player list; (9) host_set_bid message added for frontend clarity; (10) change_name and host_set_player_name messages for lobby renames.",
+      "options_considered": [
+        "Two-stage alarm with private pendingStage field (chosen) — avoids polluting the shared Room type, survives DO eviction between races gracefully, no schema migration needed",
+        "Single-stage alarm with an in-room _pendingDraw field — rejected because structuredClone in the game machine would drop it on every edit; plan explicitly called for private DO field",
+        "Continuous synchronous race loop — rejected in V1, remains rejected; DO duration guard kills 60s handlers",
+        "host_set_bid as a separate message from host_place_bid (chosen) — distinct naming for frontend clarity; identical server handler behind the scenes",
+        "Turn-delimited log via a new raceLogGrouped field on Room — rejected; computed at render time from the existing flat raceLog, zero wire cost"
+      ],
+      "difficulties_encountered": "The ClientMessage union in shared/messages.ts lost host_set_track_length during the edit sequence (a SWAP misaligned with the actual line number because a prior import edit shifted line positions). Caught by tsc and fixed in the same pass. The test file's closing bracket structure similarly misaligned after inserting describe blocks — required a follow-up read-and-repair. The two-stage alarm is the most critical runtime path: if pendingStage desyncs from the actual room state (e.g. eviction mid-race), the next alarm safely restarts at DRAW because the default is null. The lobby rewrite was the largest single component (~300 lines replacing ~100) with nested per-row signals for bid selectors and rename inputs.",
+      "reversals_and_refactors": "The plan specified the SETTLEMENT phase not auto-advancing — in V1 it auto-advanced from RACING through SETTLEMENT straight to DISTRIBUTION. The alarm was the tightest integration point: the draw-step alarm sees SETTLEMENT from a 3rd-finish and now returns without scheduling further work. Race pacing removed the last hardcoded timing constant from the DO; every alarm schedule reads from room.raceGapDeckMs or raceGapTrackMs.",
+      "key_takeaway": "A DO game server whose core loop is 'draw then flip, each with its own gap' maps naturally to a two-state alarm machine — the drawer function and flipper function are pure, the alarm just picks which one to run and when. The frontend got heavier (SolidJS signals for per-row state in the lobby), but the wire protocol stayed lean: only three new client message types and zero new server message types."
     },
     "meta": {
       "confidence_score": 4
