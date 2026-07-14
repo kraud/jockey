@@ -1,0 +1,17 @@
+{
+  "name": "cdc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "test": "bun test tests/",
+    "deploy": "wrangler deploy",
+    "build:frontend": "bun build frontend/main.ts --outdir=frontend/dist"
+  },
+  "devDependencies": {
+    "wrangler": "^4.5.0",
+    "typescript": "^5.7.0",
+    "@cloudflare/workers-types": "^4.20250109.0"
+  }
+}

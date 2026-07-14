@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Wrangler / Cloudflare Workers state
+.wrangler/
+
+# Built frontend output
+frontend/dist/
+
+# Compiled scripts
+.omp/commands/log-commit/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / editor
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
