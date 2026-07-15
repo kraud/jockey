@@ -206,5 +206,42 @@
     "meta": {
       "confidence_score": 5
     }
+  },
+  {
+    "id": "20260715-distribution-phase-controls",
+    "timestamp": "2026-07-15T00:00:00Z",
+    "concern": "code",
+    "tags": ["gameplay-loop", "state-machine", "networking", "ui-ux", "milestone"],
+    "milestone": "Playtest V1 Review",
+    "files_affected": [
+      ".context/game_design.md",
+      ".context/initial_idea.md",
+      "shared/messages.ts",
+      "src/game/types.ts",
+      "src/game/machine.ts",
+      "src/room.ts",
+      "frontend/src/views/DistributionView.tsx",
+      "frontend/src/views/DoneView.tsx",
+      "frontend/src/views/LobbyView.tsx",
+      "frontend/src/ws/handle.ts",
+      "tests/machine.test.ts",
+      "tests/messages.test.ts"
+    ],
+    "summary": {
+      "decision_made": "Expanded the Distribution phase from a bare 30s hardcoded auto-distribute timer into a full interactive system: configurable time limit (5s–10min, host-set in lobby), per-player drink assignment UI with host override capability, DRINK_CLEAR race-log events for undo tracking, gaveAll flag on player drinks to signal distribution completion, and endGame() machine function with game_ended server message to reset the room to LOBBY. The frontend DistributionView was rewritten with a player-grid layout showing give/take/consume counters, inline assignment buttons, and a complete-then-ready flow. DoneView was updated with phase badges and drink consumption totals.",
+      "options_considered": [
+        "Per-player distribution timer vs single global timer (chose single global timer — simpler, host-controlled)",
+        "Auto-distribute on timer expiry (chosen) vs force all drinks to be manually assigned (rejected — could block the game if a player disconnects)",
+        "gaveAll flag as player signal (chosen) vs host override only (rejected — independent players need self-serve completion)",
+        "DRINK_CLEAR event for undo vs full drink state snapshot (chose log event — append-only, matches raceLog pattern)",
+        "endGame() resets to LOBBY (chosen) vs full teardown (rejected — keeps room code and player identities for next round)"
+      ],
+      "difficulties_encountered": "The distribution phase spans both host and independent player actions simultaneously — the host can override any assignment while players self-serve, requiring careful coordination of gaveAll, assignDrink, and clearDrink functions to avoid double-counting. The host_assign_drink and host_clear_drink paths mirror the player paths but skip the gaveAll check since the host overrides the player's ready state. The endGame() function had to also clear the DO alarm to prevent stale race ticks from firing after the game resets.",
+      "reversals_and_refactors": "The distribution timer was previously a hardcoded 30s constant in room.ts. It is now a configurable field (distributionTimeLimitMs) on Room with host_set_distribution_time_limit message, validated on the machine layer (5s–600s). The player drink state gained a gaveAll field, the ServerMessage drinks_updated payload carries it, and the client handle function maps it. The endGame function is entirely new — previously there was no way to end a game early.",
+      "key_takeaway": "The Distribution phase is the second-most interactive phase after Bidding, and making it fully self-serve with host override requires careful ownership semantics — the machine functions check player identity for permissions, the gaveAll flag gates the ready transition, and the host_ prefixed functions bypass that gate. The DO alarm teardown pattern (storage.deleteAlarm() on endGame) is the same cleanup needed for the host-cancel scenario."
+    },
+    "meta": {
+      "confidence_score": 4
+    }
   }
 ]

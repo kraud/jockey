@@ -109,7 +109,7 @@ Swords | Sw |   ♞   |       |       |       |       |       |       |     |
 Clubs  | Cl |   ♞   |       |       |       |       |       |       |     |
 ````
 **Gameplay example on a progression of that game:**
-**After Clubs advances to step 1 (still pre-flip) and as the last horse to reach step 1, it triggers a flip on the track-card for step 1:**
+**After Clubs advances to step 1 (still pre-flip) and is the last horse to reach step 1, it triggers a flip on the track-card for step 1:**
 
 ````
        |    | start | step1 | step2 | step3 | step4 | step5 | step6 | end |

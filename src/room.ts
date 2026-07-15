@@ -7,6 +7,7 @@ import {
   hostSetLock,
   hostSetTrackLength,
   hostSetRacePacing,
+  hostSetDistributionTimeLimit,
   hostRenamePlayer,
   selfRename,
   hostStartRace,
@@ -19,9 +20,14 @@ import {
   settleRound,
   startDistribution,
   assignDrink,
+  hostAssignDrink,
+  clearDrink,
+  hostClearDrink,
   finalizeDistribution,
+  markDistributionDone,
   markReady,
   finishRound,
+  endGame,
   GameError,
 } from "./game/machine";
 import type { Room, Player } from "./game/types";
@@ -37,7 +43,6 @@ import { computeSettlement } from "./game/settlement";
 // is kept as a fallback and for backward-compatible tests.
 const RACE_DRAW_INTERVAL_MS = 750;
 const BID_TIMEOUT_MS = 30_000;
-const DIST_TIMEOUT_MS = 30_000;
 const READY_TIMEOUT_MS = 60_000;
 
 // ── Env ──────────────────────────────────────────────────────────────
@@ -424,6 +429,16 @@ export class Room extends DurableObject<Env> {
         await this.handleAdvancePhase();
         break;
 
+      case "host_end_game": {
+        this.assertHost(att);
+        await this.ctx.storage.deleteAlarm();
+        this.room = endGame(this.room);
+        await this.persist();
+        this.broadcast({ type: "game_ended" });
+        this.broadcast({ type: "phase_changed", phase: "LOBBY" });
+        this.broadcast({ type: "state_sync", room: this.room });
+        break;
+      }
       case "host_set_track_length": {
         this.assertHost(att);
         this.room = hostSetTrackLength(this.room, { length: msg.length });
@@ -445,6 +460,63 @@ export class Room extends DurableObject<Env> {
         // Broadcast exactly the new events.
         const newEvents = this.room.raceLog.slice(beforeLen);
         this.broadcast({ type: "race_log", events: newEvents });
+        break;
+      }
+
+      case "clear_drink": {
+        this.assertPlayer(att);
+        const beforeLen = this.room.raceLog.length;
+        this.room = clearDrink(this.room, {
+          fromPlayerId: att!.playerId,
+          toPlayerId: msg.toPlayerId,
+          amount: msg.amount,
+        });
+        await this.persist();
+        this.broadcastDrinks();
+        const newEvents = this.room.raceLog.slice(beforeLen);
+        this.broadcast({ type: "race_log", events: newEvents });
+        break;
+      }
+
+      case "host_assign_drink": {
+        this.assertHost(att);
+        const beforeLen = this.room.raceLog.length;
+        this.room = hostAssignDrink(this.room, {
+          fromPlayerId: msg.fromPlayerId,
+          toPlayerId: msg.toPlayerId,
+          amount: msg.amount,
+        });
+        await this.persist();
+        this.broadcastDrinks();
+        const newEvents = this.room.raceLog.slice(beforeLen);
+        this.broadcast({ type: "race_log", events: newEvents });
+        break;
+      }
+
+      case "host_clear_drink": {
+        this.assertHost(att);
+        const beforeLen = this.room.raceLog.length;
+        this.room = hostClearDrink(this.room, {
+          fromPlayerId: msg.fromPlayerId,
+          toPlayerId: msg.toPlayerId,
+          amount: msg.amount,
+        });
+        await this.persist();
+        this.broadcastDrinks();
+        const newEvents = this.room.raceLog.slice(beforeLen);
+        this.broadcast({ type: "race_log", events: newEvents });
+        break;
+      }
+
+      case "distribution_done": {
+        this.assertPlayer(att);
+        const beforeLen = this.room.raceLog.length;
+        this.room = markDistributionDone(this.room, { playerId: att!.playerId });
+        await this.persist();
+        this.broadcastDrinks();
+        const newEvents = this.room.raceLog.slice(beforeLen);
+        this.broadcast({ type: "race_log", events: newEvents });
+        await this.checkAllDone();
         break;
       }
 
@@ -470,6 +542,14 @@ export class Room extends DurableObject<Env> {
       case "host_set_race_pacing": {
         this.assertHost(att);
         this.room = hostSetRacePacing(this.room, { gapDeckMs: msg.gapDeckMs, gapTrackMs: msg.gapTrackMs });
+        await this.persist();
+        this.broadcast({ type: "state_sync", room: this.room });
+        break;
+      }
+
+      case "host_set_distribution_time_limit": {
+        this.assertHost(att);
+        this.room = hostSetDistributionTimeLimit(this.room, { timeLimitMs: msg.timeLimitMs });
         await this.persist();
         this.broadcast({ type: "state_sync", room: this.room });
         break;
@@ -616,6 +696,7 @@ export class Room extends DurableObject<Env> {
       readyDeadlineMs: null,
       raceGapDeckMs: 2000,
       raceGapTrackMs: 1000,
+      distributionTimeLimitMs: 30_000,
     };
   }
 
@@ -649,6 +730,7 @@ export class Room extends DurableObject<Env> {
         give: p.drinks.give,
         take: p.drinks.take,
         consume: p.drinks.consume,
+        gaveAll: p.drinks.gaveAll,
       })),
     });
   }
@@ -687,6 +769,20 @@ export class Room extends DurableObject<Env> {
     await this.persist();
     await this.ctx.storage.deleteAlarm();
     this.broadcast({ type: "phase_changed", phase: "LOBBY" });
+    this.broadcast({ type: "state_sync", room: this.room });
+  }
+
+  /**
+   * If all players have marked distribution done, cancel the deadline
+   * alarm so the host can trigger the transition manually.
+   */
+  private async checkAllDone(): Promise<void> {
+    if (!this.room || this.room.state !== "DISTRIBUTION") return;
+    const allDone = this.room.players.every((p) => p.drinks.gaveAll);
+    if (!allDone) return;
+    this.room.distDeadlineMs = null;
+    await this.ctx.storage.deleteAlarm();
+    await this.persist();
     this.broadcast({ type: "state_sync", room: this.room });
   }
 }

@@ -187,6 +187,26 @@ export default function LobbyView(props: Props) {
             </div>
           </div>
 
+          {/* Distribution timer sub-card */}
+          <div style="margin:0.75rem 0;padding:0.5rem;border:1px solid #533483;border-radius:4px;">
+            <h3 style="font-size:0.95rem;margin:0 0 0.5rem 0;">Distribution timer</h3>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+              <input
+                type="number"
+                min={5}
+                max={600}
+                step={5}
+                style="width:80px;"
+                value={room().distributionTimeLimitMs / 1000}
+                onChange={(e) => {
+                  const secs = Math.max(5, Math.min(600, parseInt(e.currentTarget.value, 10) || 30));
+                  props.send({ type: "host_set_distribution_time_limit", timeLimitMs: secs * 1000 });
+                }}
+              />
+              <span style="font-size:0.85rem;">seconds</span>
+             </div>
+           </div>
+
           <button
             onClick={() =>
               props.send({ type: "host_lock_room", locked: !room().isLocked })

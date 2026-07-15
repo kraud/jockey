@@ -76,3 +76,20 @@ The proposed loop is:
 7. Once the race is over, the settlement phase takes place and all the users are awarded their winnings/penalties according to the rules defined on the game_design.md file.
 8. From here, the distribution phase begins. The host (and all the independent players) can then assign drinks to the players according to the rules defined on the game_design.md file. The default time limit for this is 30 seconds. From there, they are in a 'busy' state, and are informed of how many drinks they need to take.
 9. Once they are done taking their drinks, they mark themselves as 'ready', to inform the host that they are ready to proceed. The host can proceed with the next stage of the game loop at any point (the ready signal is informational only - not a limitation for the host).
+
+
+---
+#### Settlement phase details
+Time to refine the distribution phase. The game_design document should be expanded to include more details about the expected distribution of drinks.
+* Each player can see a counter of the drinks the have available to give.
+* Each player can see a counter of the drinks they have been assigned to consume.
+  - For players whose horse finished in 1st or 2nd place, the counter will be initiated on at zero.
+  - Othewise, if their horse finished in 3rd or 4th place, this counter will be initiated on the corresponding value to the their bid combined with their horse position (see 7. Settlement for details).
+* All players (regardless of their horse position) will see the list of players, each displaying their counter of drinks-to-consume, which should be updated in real-time as other player assign drinks to other players.
+* Any player with drinks to give can assign drinks to other players by some inline actions on that list.
+* As a player assigns drinks to other players, their counter of drinks-to-give should be updated in real-time.
+* Once a player has assigned all their drinks to other players, they can set their status as 'done'. This information is shared with other players in real-time, via the list of players mentioned above.
+* Once a player has assigned all their drinks to other players, they can set their status as 'done'. This information is shared with other players in real-time, via the list of players mentioned above.
+* Once the host decides, the game can trigger the transition to the next phase. Otherwise, if the time limit for the distribution phase is exceeded (30s by default, configurable for the host via the `distribution_time_limit` setting), the game will automatically move to the next phase.
+* On the ready phase, each player should clearly see the amount of drinks they need to take, and be able to mark themselves as 'ready' when they are done drinking them. For hosted players, the host will see on a dedicated list the amount each has to drink, and the host can mark them as ready as will. 
+* After everyone has marked themselves as 'ready', the host can trigger the transition, either back to bidding phase (keeping the same players and the same room) with no state remaining from the previous round (only the players' names), or end the game and re-direct everyone to the lobby.

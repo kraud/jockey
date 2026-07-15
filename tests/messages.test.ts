@@ -218,4 +218,54 @@ describe("parseClientMessage", () => {
       }
     }
   });
+
+  // ── New message types ───────────────────────────────────────────
+
+  test("host_set_distribution_time_limit valid", () => {
+    const msg = parseClientMessage(JSON.stringify({
+      type: "host_set_distribution_time_limit", timeLimitMs: 30000,
+    }));
+    if (msg.type === "host_set_distribution_time_limit") {
+      expect(msg.timeLimitMs).toBe(30000);
+    }
+  });
+
+  test("rejects host_set_distribution_time_limit with 0", () => {
+    expect(() => parseClientMessage(JSON.stringify({
+      type: "host_set_distribution_time_limit", timeLimitMs: 0,
+    }))).toThrow(WsProtocolError);
+  });
+
+  test("rejects host_set_distribution_time_limit with string", () => {
+    expect(() => parseClientMessage(JSON.stringify({
+      type: "host_set_distribution_time_limit", timeLimitMs: "abc",
+    }))).toThrow(WsProtocolError);
+  });
+
+  test("host_assign_drink valid", () => {
+    const msg = parseClientMessage(JSON.stringify({
+      type: "host_assign_drink", fromPlayerId: "p1", toPlayerId: "p2", amount: 3,
+    }));
+    if (msg.type === "host_assign_drink") {
+      expect(msg.fromPlayerId).toBe("p1");
+      expect(msg.toPlayerId).toBe("p2");
+      expect(msg.amount).toBe(3);
+    }
+  });
+
+  test("rejects host_assign_drink with negative amount", () => {
+    expect(() => parseClientMessage(JSON.stringify({
+      type: "host_assign_drink", fromPlayerId: "p1", toPlayerId: "p2", amount: -1,
+    }))).toThrow(WsProtocolError);
+  });
+
+  test("distribution_done valid", () => {
+    const msg = parseClientMessage(JSON.stringify({ type: "distribution_done" }));
+    expect(msg.type).toBe("distribution_done");
+  });
+
+  test("host_end_game valid", () => {
+    const msg = parseClientMessage(JSON.stringify({ type: "host_end_game" }));
+    expect(msg.type).toBe("host_end_game");
+  });
 });

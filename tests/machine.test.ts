@@ -5,6 +5,7 @@ import {
   finishRound,
   hostAddPlayer,
   hostSetRacePacing,
+  hostSetDistributionTimeLimit,
   hostRenamePlayer,
   hostStartRace,
   placeBid,
@@ -13,6 +14,11 @@ import {
   finalizeDistribution,
   markReady,
   assignDrink,
+  hostAssignDrink,
+  clearDrink,
+  hostClearDrink,
+  markDistributionDone,
+  endGame,
   startRace,
   closeBidding,
 } from "../src/game/machine";
@@ -253,5 +259,198 @@ describe("countdown", () => {
 
     // startRace on non-COUNTDOWN throws
     expect(() => startRace(room)).toThrow(GameError);
+  });
+});
+
+// ── New machine functions ─────────────────────────────────────────
+
+describe("hostSetDistributionTimeLimit", () => {
+  test("writes the field on a LOBBY room", () => {
+    const room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
+    const result = hostSetDistributionTimeLimit(room, { timeLimitMs: 10000 });
+    expect(result.distributionTimeLimitMs).toBe(10000);
+  });
+
+  test("throws on non-LOBBY room", () => {
+    let room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
+    room = hostStartRace(room);
+    expect(() => hostSetDistributionTimeLimit(room, { timeLimitMs: 10000 })).toThrow(GameError);
+  });
+
+  test("clamps to valid range", () => {
+    const room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
+    expect(() => hostSetDistributionTimeLimit(room, { timeLimitMs: 0 })).toThrow(GameError);
+  });
+});
+
+describe("hostAssignDrink", () => {
+  test("decrements from and increments to like assignDrink", () => {
+    let room = makeLobbyRoom([
+      { id: "a", name: "Alice", type: "independent" },
+      { id: "b", name: "Bob", type: "independent" },
+    ]);
+    room = hostStartRace(room);
+    // Simulate entering DISTRIBUTION with give drinks on Alice
+    room.state = "DISTRIBUTION";
+    const alice = room.players.find(p => p.id === "a")!;
+    alice.drinks.give = 5;
+
+    room = hostAssignDrink(room, { fromPlayerId: "a", toPlayerId: "b", amount: 3 });
+
+    const a = room.players.find(p => p.id === "a")!;
+    const b = room.players.find(p => p.id === "b")!;
+    expect(a.drinks.give).toBe(2);
+    expect(b.drinks.consume).toBe(3);
+    expect(room.raceLog.some(e => e.type === "DRINK_GIVE" && "from" in e && e.from === "a" && e.to === "b" && e.amount === 3)).toBe(true);
+  });
+
+  test("throws outside DISTRIBUTION", () => {
+    const room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
+    expect(() => hostAssignDrink(room, { fromPlayerId: "a", toPlayerId: "a", amount: 1 })).toThrow(GameError);
+  });
+
+  test("throws on insufficient pool", () => {
+    let room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
+    room.state = "DISTRIBUTION";
+    expect(() => hostAssignDrink(room, { fromPlayerId: "a", toPlayerId: "a", amount: 1 })).toThrow(GameError);
+  });
+});
+
+describe("clearDrink", () => {
+  test("returns drink to giver and removes from recipient", () => {
+    let room = makeLobbyRoom([
+      { id: "a", name: "Alice", type: "independent" },
+      { id: "b", name: "Bob", type: "independent" },
+    ]);
+    room = hostStartRace(room);
+    room.state = "DISTRIBUTION";
+    const alice = room.players.find(p => p.id === "a")!;
+    alice.drinks.give = 5;
+
+    // First give 3 to Bob
+    room = assignDrink(room, { fromPlayerId: "a", toPlayerId: "b", amount: 3 });
+    // Then clear 2
+    room = clearDrink(room, { fromPlayerId: "a", toPlayerId: "b", amount: 2 });
+
+    const a = room.players.find(p => p.id === "a")!;
+    const b = room.players.find(p => p.id === "b")!;
+    expect(a.drinks.give).toBe(4); // 5 - 3 + 2 = 4
+    expect(b.drinks.consume).toBe(1); // 3 - 2 = 1
+    expect(room.raceLog.some(e => e.type === "DRINK_CLEAR" && "from" in e && e.from === "a" && e.to === "b" && e.amount === 2)).toBe(true);
+  });
+
+  test("throws DRINK_INSUFFICIENT_RECIPIENT when recipient has less consume than cleared", () => {
+    let room = makeLobbyRoom([
+      { id: "a", name: "Alice", type: "independent" },
+      { id: "b", name: "Bob", type: "independent" },
+    ]);
+    room.state = "DISTRIBUTION";
+    const alice = room.players.find(p => p.id === "a")!;
+    alice.drinks.give = 5;
+
+    // Give 1 to Bob
+    room = assignDrink(room, { fromPlayerId: "a", toPlayerId: "b", amount: 1 });
+    // Try to clear 2 — Bob only has 1
+    expect(() => clearDrink(room, { fromPlayerId: "a", toPlayerId: "b", amount: 2 })).toThrow(GameError);
+  });
+
+  test("throws outside DISTRIBUTION", () => {
+    const room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
+    expect(() => clearDrink(room, { fromPlayerId: "a", toPlayerId: "a", amount: 1 })).toThrow(GameError);
+  });
+});
+
+describe("hostClearDrink", () => {
+  test("mirrors clearDrink for host proxy", () => {
+    let room = makeLobbyRoom([
+      { id: "a", name: "Alice", type: "independent" },
+      { id: "b", name: "Bob", type: "independent" },
+    ]);
+    room = hostStartRace(room);
+    room.state = "DISTRIBUTION";
+    const alice = room.players.find(p => p.id === "a")!;
+    alice.drinks.give = 5;
+
+    // Give 3 to Bob via hostAssignDrink
+    room = hostAssignDrink(room, { fromPlayerId: "a", toPlayerId: "b", amount: 3 });
+    // Clear 2 via hostClearDrink
+    room = hostClearDrink(room, { fromPlayerId: "a", toPlayerId: "b", amount: 2 });
+
+    const a = room.players.find(p => p.id === "a")!;
+    const b = room.players.find(p => p.id === "b")!;
+    expect(a.drinks.give).toBe(4);
+    expect(b.drinks.consume).toBe(1);
+  });
+
+  test("throws outside DISTRIBUTION", () => {
+    const room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
+    expect(() => hostClearDrink(room, { fromPlayerId: "a", toPlayerId: "a", amount: 1 })).toThrow(GameError);
+  });
+});
+
+describe("markDistributionDone", () => {
+  test("sets gaveAll and pushes DISTRIBUTION_DONE event", () => {
+    let room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
+    room.state = "DISTRIBUTION";
+
+    room = markDistributionDone(room, { playerId: "a" });
+
+    const alice = room.players.find(p => p.id === "a")!;
+    expect(alice.drinks.gaveAll).toBe(true);
+    expect(room.raceLog.some(e => e.type === "DISTRIBUTION_DONE" && e.playerId === "a")).toBe(true);
+  });
+
+  test("throws outside DISTRIBUTION", () => {
+    const room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
+    expect(() => markDistributionDone(room, { playerId: "a" })).toThrow(GameError);
+  });
+
+  test("toggles gaveAll on second call", () => {
+    let room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
+    room.state = "DISTRIBUTION";
+
+    room = markDistributionDone(room, { playerId: "a" });
+    expect(room.players.find(p => p.id === "a")!.drinks.gaveAll).toBe(true);
+
+    room = markDistributionDone(room, { playerId: "a" });
+    expect(room.players.find(p => p.id === "a")!.drinks.gaveAll).toBe(false);
+    expect(room.raceLog.filter(e => e.type === "DISTRIBUTION_DONE" && e.playerId === "a").length).toBe(2);
+  });
+});
+
+describe("startDistribution uses distributionTimeLimitMs", () => {
+  test("deadline is set from room config", () => {
+    let room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
+    room.state = "SETTLEMENT";
+    room.distributionTimeLimitMs = 15000;
+
+    const before = Date.now();
+    room = startDistribution(room);
+    const after = Date.now();
+
+    expect(room.distDeadlineMs).toBeGreaterThanOrEqual(before + 15000);
+    expect(room.distDeadlineMs).toBeLessThanOrEqual(after + 15000);
+  });
+});
+
+describe("endGame", () => {
+  test("resets players, hostId, and round fields", () => {
+    let room = makeLobbyRoom([{ id: "a", name: "Alice", type: "independent" }]);
+    room.state = "READY";
+
+    room = endGame(room);
+
+    expect(room.state).toBe("LOBBY");
+    expect(room.players).toEqual([]);
+    expect(room.hostId).toBe("");
+    expect(room.isLocked).toBe(false);
+    expect(room.horses).toEqual([]);
+    expect(room.trackCards).toEqual([]);
+    expect(room.bids).toEqual({});
+    expect(room.raceLog).toEqual([]);
+    expect(room.bidDeadlineMs).toBeNull();
+    expect(room.countdownMs).toBeNull();
+    expect(room.distDeadlineMs).toBeNull();
+    expect(room.readyDeadlineMs).toBeNull();
   });
 });

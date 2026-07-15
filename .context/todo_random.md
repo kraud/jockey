@@ -24,3 +24,5 @@
 
   **Vertical — track-cards on the leftmost column.** The grid shape is transposed: each horse gets one row running bottom-to-top, and the track-cards are stacked in the leftmost column. The starting line is the bottom of the column, the finish line is the top. Progression runs bottom-to-top. A horse's position `p` maps to a row offset from the bottom; a track-card at step `k` is read off the leftmost column at the matching height. Useful for tall/narrow viewports.
   ````
+
+- [ ] Add jockers into the draw deck, and when the are drawn, all the horses move 1 step forward, except the horse that is currently leading the race (or horses, if there's a tie for the first place), which will remain in place. It would be as if leading the horse 'stumbles' during the race, making more exciting when the rest of the horses get closer.

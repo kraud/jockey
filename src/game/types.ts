@@ -22,6 +22,7 @@ export interface Player {
     take: number;    // penalty drinks auto-added
     consume: number; // drinks to consume this round
     isReady: boolean;
+    gaveAll: boolean; // player marked distribution as done
   };
 }
 
@@ -80,8 +81,10 @@ export type RaceLogEvent =
   | { type: "RACE_END"; placements: ReadonlyArray<{ suit: Suit; placement: number }> }
   | { type: "SETTLEMENT"; playerId: string; drinksGive: number; drinksTake: number }
   | { type: "DRINK_GIVE"; from: string; to: string; amount: number }
+  | { type: "DRINK_CLEAR"; from: string; to: string; amount: number }
   | { type: "DRINK_AUTO"; to: string; amount: number }
-  | { type: "PLAYER_READY"; playerId: string };
+  | { type: "PLAYER_READY"; playerId: string }
+  | { type: "DISTRIBUTION_DONE"; playerId: string };
 
 // ── Room ─────────────────────────────────────────────────────────────
 export interface Room {
@@ -104,6 +107,7 @@ export interface Room {
   readyDeadlineMs: number | null;
   raceGapDeckMs: number;
   raceGapTrackMs: number;
+  distributionTimeLimitMs: number;
 }
 
 // ── Settlement result ────────────────────────────────────────────────

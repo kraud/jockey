@@ -22,6 +22,7 @@ export interface Player {
     take: number;    // penalty drinks auto-added
     consume: number; // drinks to consume this round
     isReady: boolean;
+    gaveAll: boolean; // player marked distribution as done
   };
 }
 
@@ -80,8 +81,10 @@ export type RaceLogEvent =
   | { type: "RACE_END"; placements: ReadonlyArray<{ suit: Suit; placement: number }> }
   | { type: "SETTLEMENT"; playerId: string; drinksGive: number; drinksTake: number }
   | { type: "DRINK_GIVE"; from: string; to: string; amount: number }
+  | { type: "DRINK_CLEAR"; from: string; to: string; amount: number }
   | { type: "DRINK_AUTO"; to: string; amount: number }
-  | { type: "PLAYER_READY"; playerId: string };
+  | { type: "PLAYER_READY"; playerId: string }
+  | { type: "DISTRIBUTION_DONE"; playerId: string };
 
 // ── Room ─────────────────────────────────────────────────────────────
 export interface Room {
@@ -104,6 +107,7 @@ export interface Room {
   readyDeadlineMs: number | null;
   raceGapDeckMs: number;
   raceGapTrackMs: number;
+  distributionTimeLimitMs: number;
 }
 
 // ── Settlement result ────────────────────────────────────────────────
@@ -150,6 +154,12 @@ export type ClientMessage =
   | { type: "change_name"; name: string }
   | { type: "host_set_bid"; playerId: string; suit: Suit; amount: number }
   | { type: "assign_drink"; to: string; amount: number }
+  | { type: "distribution_done" }
+  | { type: "host_assign_drink"; fromPlayerId: string; toPlayerId: string; amount: number }
+  | { type: "clear_drink"; fromPlayerId: string; toPlayerId: string; amount: number }
+  | { type: "host_clear_drink"; fromPlayerId: string; toPlayerId: string; amount: number }
+  | { type: "host_end_game" }
+  | { type: "host_set_distribution_time_limit"; timeLimitMs: number }
   | { type: "ready"; ready: boolean };
 
 // ── Server message types ─────────────────────────────────────────────
@@ -164,8 +174,9 @@ export type ServerMessage =
   | { type: "bids_updated"; bids: Bid[] }
   | { type: "race_log"; events: RaceLogEvent[] }
   | { type: "race_ended"; placements: ReadonlyArray<{ suit: Suit; placement: number }>; settlement: SettlementResult[] }
-  | { type: "drinks_updated"; drinks: Array<{ playerId: string; give: number; take: number; consume: number }> }
+  | { type: "drinks_updated"; drinks: Array<{ playerId: string; give: number; take: number; consume: number; gaveAll: boolean }> }
   | { type: "player_ready"; playerId: string; ready: boolean }
+  | { type: "game_ended" }
   | { type: "error"; code: string; message: string }
   | { type: "state_sync"; room: Room };
 
@@ -251,6 +262,9 @@ export function parseClientMessage(json: string): ClientMessage {
     case "create_room":
       return { type: "create_room" };
 
+    case "distribution_done":
+      return { type: "distribution_done" };
+
     case "join_room": {
       validateRoomCode(msg.roomCode);
       validatePlayerName(msg.playerName);
@@ -292,9 +306,35 @@ export function parseClientMessage(json: string): ClientMessage {
         amount: msg.amount as number,
       };
     }
-
     case "host_advance_phase":
       return { type: "host_advance_phase" };
+
+    case "host_assign_drink": {
+      validatePlayerId(msg.fromPlayerId);
+      validatePlayerId(msg.toPlayerId);
+      validatePositiveInt(msg.amount);
+      return {
+        type: "host_assign_drink",
+        fromPlayerId: msg.fromPlayerId as string,
+        toPlayerId: msg.toPlayerId as string,
+        amount: msg.amount as number,
+      };
+    }
+
+    case "host_clear_drink": {
+      validatePlayerId(msg.fromPlayerId);
+      validatePlayerId(msg.toPlayerId);
+      validatePositiveInt(msg.amount);
+      return {
+        type: "host_clear_drink",
+        fromPlayerId: msg.fromPlayerId as string,
+        toPlayerId: msg.toPlayerId as string,
+        amount: msg.amount as number,
+      };
+    }
+
+    case "host_end_game":
+      return { type: "host_end_game" };
 
     case "host_set_track_length": {
       if (typeof msg.length !== "number" || !Number.isInteger(msg.length) || msg.length < 6 || msg.length > 20) {
@@ -307,6 +347,18 @@ export function parseClientMessage(json: string): ClientMessage {
       validatePlayerId(msg.to);
       validatePositiveInt(msg.amount);
       return { type: "assign_drink", to: msg.to as string, amount: msg.amount as number };
+    }
+
+    case "clear_drink": {
+      validatePlayerId(msg.fromPlayerId);
+      validatePlayerId(msg.toPlayerId);
+      validatePositiveInt(msg.amount);
+      return {
+        type: "clear_drink",
+        fromPlayerId: msg.fromPlayerId as string,
+        toPlayerId: msg.toPlayerId as string,
+        amount: msg.amount as number,
+      };
     }
 
     case "ready": {
@@ -353,6 +405,12 @@ export function parseClientMessage(json: string): ClientMessage {
       };
     }
 
+    case "host_set_distribution_time_limit": {
+      if (typeof msg.timeLimitMs !== "number" || !Number.isInteger(msg.timeLimitMs) || msg.timeLimitMs < 5000 || msg.timeLimitMs > 600000) {
+        throw new WsProtocolError("VALIDATION_ERROR", "timeLimitMs must be integer 5000–600000");
+      }
+      return { type: "host_set_distribution_time_limit", timeLimitMs: msg.timeLimitMs as number };
+    }
     default:
       throw new WsProtocolError("VALIDATION_ERROR", `Unknown message type: ${String(type)}`);
   }

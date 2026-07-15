@@ -68,7 +68,7 @@ export function hostAddPlayer(
     name: params.name,
     type: params.type,
     isConnected: true,
-    drinks: { give: 0, take: 0, consume: 0, isReady: false },
+    drinks: { give: 0, take: 0, consume: 0, isReady: false, gaveAll: false },
   };
 
   r.players.push(player);
@@ -133,6 +133,22 @@ export function hostSetRacePacing(
   return r;
 }
 
+export function hostSetDistributionTimeLimit(
+  room: Room,
+  params: { timeLimitMs: number },
+): Room {
+  assertPhase(room, "LOBBY");
+  if (params.timeLimitMs < 5_000 || params.timeLimitMs > 600_000) {
+    throw new GameError(
+      "DIST_TIME_OUT_OF_RANGE",
+      `Distribution time limit must be 5000–600000 ms, got ${params.timeLimitMs}`,
+    );
+  }
+  const r = structuredClone(room);
+  r.distributionTimeLimitMs = params.timeLimitMs;
+  return r;
+}
+
 export function hostRenamePlayer(
   room: Room,
   params: { playerId: string; name: string },
@@ -173,7 +189,7 @@ export function hostStartRace(room: Room): Room {
   r.raceLog = [];
   // Reset drinks for all players
   for (const p of r.players) {
-    p.drinks = { give: 0, take: 0, consume: 0, isReady: false };
+    p.drinks = { give: 0, take: 0, consume: 0, isReady: false, gaveAll: false };
   }
   return r;
 }
@@ -350,7 +366,7 @@ export function startDistribution(room: Room): Room {
 
   const r = structuredClone(room);
   r.state = "DISTRIBUTION";
-  r.distDeadlineMs = Date.now() + 30_000;
+  r.distDeadlineMs = Date.now() + r.distributionTimeLimitMs;
   return r;
 }
 
@@ -387,6 +403,111 @@ export function assignDrink(
     amount: params.amount,
   });
 
+  return r;
+}
+
+export function hostAssignDrink(
+  room: Room,
+  params: { fromPlayerId: string; toPlayerId: string; amount: number },
+): Room {
+  assertPhase(room, "DISTRIBUTION");
+
+  if (params.amount <= 0) {
+    throw new GameError("DRINK_INVALID_AMOUNT", "Amount must be positive");
+  }
+
+  const r = structuredClone(room);
+  const from = findPlayer(r, params.fromPlayerId);
+  const to = findPlayer(r, params.toPlayerId);
+
+  if (from.drinks.give < params.amount) {
+    throw new GameError(
+      "DRINK_INSUFFICIENT_POOL",
+      `${from.name} only has ${from.drinks.give} drinks to give, requested ${params.amount}`,
+    );
+  }
+
+  from.drinks.give -= params.amount;
+  to.drinks.consume += params.amount;
+
+  r.raceLog.push({
+    type: "DRINK_GIVE",
+    from: params.fromPlayerId,
+    to: params.toPlayerId,
+    amount: params.amount,
+  });
+
+  return r;
+}
+
+export function clearDrink(
+  room: Room,
+  params: { fromPlayerId: string; toPlayerId: string; amount: number },
+): Room {
+  assertPhase(room, "DISTRIBUTION");
+  if (params.amount <= 0) {
+    throw new GameError("DRINK_INVALID_AMOUNT", "Amount must be positive");
+  }
+  const r = structuredClone(room);
+  const from = findPlayer(r, params.fromPlayerId);
+  const to = findPlayer(r, params.toPlayerId);
+  if (to.drinks.consume < params.amount) {
+    throw new GameError(
+      "DRINK_INSUFFICIENT_RECIPIENT",
+      `${to.name} only has ${to.drinks.consume} drinks to clear, requested ${params.amount}`,
+    );
+  }
+  from.drinks.give += params.amount;
+  to.drinks.consume -= params.amount;
+  r.raceLog.push({
+    type: "DRINK_CLEAR",
+    from: params.fromPlayerId,
+    to: params.toPlayerId,
+    amount: params.amount,
+  });
+  return r;
+}
+
+export function hostClearDrink(
+  room: Room,
+  params: { fromPlayerId: string; toPlayerId: string; amount: number },
+): Room {
+  assertPhase(room, "DISTRIBUTION");
+  if (params.amount <= 0) {
+    throw new GameError("DRINK_INVALID_AMOUNT", "Amount must be positive");
+  }
+  const r = structuredClone(room);
+  const from = findPlayer(r, params.fromPlayerId);
+  const to = findPlayer(r, params.toPlayerId);
+  if (to.drinks.consume < params.amount) {
+    throw new GameError(
+      "DRINK_INSUFFICIENT_RECIPIENT",
+      `${to.name} only has ${to.drinks.consume} drinks to clear, requested ${params.amount}`,
+    );
+  }
+  from.drinks.give += params.amount;
+  to.drinks.consume -= params.amount;
+  r.raceLog.push({
+    type: "DRINK_CLEAR",
+    from: params.fromPlayerId,
+    to: params.toPlayerId,
+    amount: params.amount,
+  });
+  return r;
+}
+
+export function markDistributionDone(
+  room: Room,
+  params: { playerId: string },
+): Room {
+  assertPhase(room, "DISTRIBUTION");
+  const r = structuredClone(room);
+  const player = findPlayer(r, params.playerId);
+  player.drinks.gaveAll = !player.drinks.gaveAll;
+  r.raceLog.push({
+    type: "DISTRIBUTION_DONE",
+    playerId: params.playerId,
+  });
   return r;
 }
 
@@ -458,8 +579,26 @@ export function finishRound(room: Room): Room {
   r.readyDeadlineMs = null;
 
   for (const p of r.players) {
-    p.drinks = { give: 0, take: 0, consume: 0, isReady: false };
+    p.drinks = { give: 0, take: 0, consume: 0, isReady: false, gaveAll: false };
   }
 
+  return r;
+}
+
+export function endGame(room: Room): Room {
+  const r = structuredClone(room);
+  r.state = "LOBBY";
+  r.players = [];
+  r.hostId = "";
+  r.isLocked = false;
+  r.horses = [];
+  r.trackCards = [];
+  r.deckState = { drawPile: [], discardPile: [] };
+  r.bids = {};
+  r.raceLog = [];
+  r.bidDeadlineMs = null;
+  r.countdownMs = null;
+  r.distDeadlineMs = null;
+  r.readyDeadlineMs = null;
   return r;
 }
