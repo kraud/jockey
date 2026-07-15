@@ -55,9 +55,16 @@ The server constructs `trackLength` track-cards. Each track-card's suit is indep
 
 ### 4. Race
 The remaining deck (Spanish 48-card deck minus the 4 × 11 "jockey" cards = 44 cards) is shuffled. The server draws one card at a time. The horse matching the card's suit advances one step. The drawn card is discarded. If the drawn card's suit matches a horse that has already finished, the card is ignored (no horse moves) and the next card is drawn. When the discard pile is exhausted, it is reshuffled back into the draw pile and the race continues.
+When a horse advances, the server checks whether it was the last-placed horse (lowest step index) before the move and whether the newly reached step's track-card is still face-down. If both conditions are true, Phase 5 (Track-Card Flip) is triggered immediately.
 
-### 5. Track-Card Flip (Regression)
-When a track-card's step is reached by the last-placed horse (the horse with the lowest current step index), that track-card is flipped face-up. If the flipped card's suit matches a horse that has already finished, it is ignored (no horse moves). Otherwise, the matching horse regresses one step. A regressing horse that would step below 0 stays at 0. A regression is itself a "horse passed a step" event, but it does not trigger another track-card flip on the same step (regression is not a re-passing).
+### 5. Track-Card Flips (Regression)
+Each track-card starts face-down. It is flipped only when the horse that was last-placed (lowest step index, possibly tied) advances to that step for the first time — i.e., when its forward movement brings it to a position whose track-card is still face-down. Once flipped, the card's suit determines which horse regresses:
+
+- If the flipped card's suit matches a horse that has already finished, it is ignored — no horse moves.
+- Otherwise, the matching horse (if not finished) regresses one step from its current position.
+- A horse cannot regress below step 0 (the starting line — it stays at 0).
+
+A regression does not trigger any additional track-card flips (a horse regressing into a step is not "first reaching" it). Each track-card flips at most once per race. If the flipped card's suit matches the last-placed horse itself, that horse immediately regresses back one step — it does not stall at the newly reached position.
 
 ### 6. Finish Detection
 Placements are assigned in strict crossing order: the first horse to advance past step N (the finish line) gets 1st, the second gets 2nd, the third gets 3rd. As soon as the third horse crosses, the race ends. The remaining horse is 4th. A horse that has finished cannot be moved by subsequent deck draws or track-card flips (those events are ignored).
@@ -74,6 +81,55 @@ Every player with `drinks_to_give > 0` has a 30 s global window (single shared t
 
 ### 9. Ready Phase
 Once all drinks are settled, every player sees their own `drinks_to_consume` total. Each player presses a "ready" button when they have finished drinking. The next round begins the moment all active players are ready, or after a 60 s hard cap (auto-ready any remaining players). The next round resets all race state (positions, placements, drinks counters) but keeps player identities and any per-player persistent settings the host has set.
+
+## Track Layout
+
+The track is rendered as a horizontal CSS grid with a fixed orientation: track-cards occupy the top row, one row per horse sits below, and progression runs left-to-right. Step 1 sits closest to the starting line (left side); step N sits closest to the finish line (right side).
+
+**Grid shape (N = track length, default 6):**
+- Columns: `[suit label 50px] [start] [step 1] [step 2] … [step N] [end]`
+- Rows: 1 header row containing the track-cards, then one row per suit in the order Coins, Cups, Swords, Clubs (top to bottom).
+
+**Cell contents:**
+- Header row: empty / "start" label / one track-card per step (face-down until first flip) / "end" label.
+- Each suit row: 2-letter suit label / the horse's marker placed in the column matching its current `position` (0 = `start` column, 1..N = matching step column, finished = `end` column).
+
+**Progression direction:** left-to-right. A horse advances when the deck draws its suit; visually it moves one cell to the right.
+
+**Step ↔ column mapping (1-indexed):** `column = position` for positions 0..N (with `start` mapped to 0 and `end` mapped to N+1). A horse at position `p` is drawn in the column for step `p` when `1 ≤ p ≤ N`, in the `start` column when `p = 0`, and in the `end` column when `p > N` (finished).
+
+**ASCII diagram (track length 6, all horses at start, no flips yet):**
+
+````
+       |    | start | step1 | step2 | step3 | step4 | step5 | step6 | end |
+       |    |       |   🖌  |   🖌  |   🖌  |   🖌 |   🖌  |  🖌   |     |
+Coins  | Co |   ♞   |       |       |       |       |       |       |     |
+Cups   | Cu |   ♞   |       |       |       |       |       |       |     |
+Swords | Sw |   ♞   |       |       |       |       |       |       |     |
+Clubs  | Cl |   ♞   |       |       |       |       |       |       |     |
+````
+**Gameplay example on a progression of that game:**
+**After Clubs advances to step 1 (still pre-flip) and as the last horse to reach step 1, it triggers a flip on the track-card for step 1:**
+
+````
+       |    | start | step1 | step2 | step3 | step4 | step5 | step6 | end |
+       |    |       |   🖌  |   🖌  |   🖌 |   🖌  |   🖌  |   🖌  |     |
+Coins  | Co |       |       |       |   ♞   |       |       |       |     |
+Cups   | Cu |       |       |   ♞   |       |       |       |       |     |
+Swords | Sw |       |       |   ♞   |       |       |       |       |     |
+Clubs  | Cl |       |   ♞   |       |       |       |       |       |     |
+````
+
+**After revealing Cups under the track-card for step 1, Cups regresses one step**
+
+````
+       |    | start | step1 | step2 | step3 | step4 | step5 | step6 | end |
+       |    |       |   Cu  |   🖌  |   🖌  |   🖌  |   🖌 |   🖌  |     |
+Coins  | Co |       |       |       |   ♞   |       |       |       |     |
+Cups   | Cu |       |   ♞   |       |       |       |       |       |     |
+Swords | Sw |       |       |   ♞   |       |       |       |       |     |
+Clubs  | Cl |       |   ♞   |       |       |       |       |       |     |
+````
 
 ## Glossary & Terms
 
@@ -99,10 +155,10 @@ Once all drinks are settled, every player sees their own `drinks_to_consume` tot
 - **Placement** — a horse's finishing rank (1, 2, 3, or 4). Assigned in strict crossing order.
 - **Race** — the period from the first deck draw until the third horse crosses the finishing line.
 - **Ready Phase** — the post-Distribution phase where each player presses a "ready" button once they have consumed their drinks.
-- **Regression** — a one-step backward movement of a horse, triggered when a track-card is flipped and its suit matches a non-finished horse. Cannot move a horse below step 0.
+- **Regression** — a one-step backward movement of a horse, triggered when a track-card is flipped (by the last-placed horse reaching that step) and its suit matches a non-finished horse. Cannot move a horse below step 0.
 - **Spanish Deck** — the 48-card deck with suits Coins, Cups, Swords, Clubs and ranks 1–12.
 - **Step** — a discrete position on the track, indexed 1..N. A horse at step 0 is at the starting line.
-- **Step (last-placed horse triggers flip)** — the rule that a track-card is flipped only when the lowest-positioned horse passes that step.
+- **Step (last-placed horse triggers flip)** — the rule that a track-card is flipped only when the horse that was last-placed (lowest step index, possibly tied) before its move advances to that step for the first time. Each track-card flips at most once.
 - **Track** — the `trackLength`-long sequence of face-down track-cards, one per step, plus the finishing line one step beyond.
 - **Track Length** — the number of steps in the current race. Default 6, range 6..20 inclusive.
 - **Track-Card** — a face-down card on the track. Its suit determines which horse regresses when it is flipped. Flipped by the "last-placed horse" rule.
