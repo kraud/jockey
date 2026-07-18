@@ -2,6 +2,10 @@ import { createStore } from "solid-js/store";
 import type { ClientMessage } from "../../../shared/messages"
 import type { RoomState } from "./handle";
 import { applyServerMessage, parseServerMessage } from "./handle";
+// ── frontend/src/ws/store.ts — createRoomConnection(code, name): opens a WebSocket, manages exponential-backoff reconnect, returns { state, send, disconnect } over a createStore<RoomState>. ──
+// Depends on: solid-js/store, ../../../shared/messages, ./handle.
+// Used by: RoomView.tsx.
+
 
 export type { RoomState } from "./handle";
 
@@ -14,6 +18,7 @@ export type { RoomState } from "./handle";
  * Reconnect uses exponential backoff (500ms * 2^retry, max 5s, 10 retries)
  * lifted verbatim from the old ws-client.ts.
  */
+// ⚠️ STATE MUTATION: opens a WebSocket, mutates `state` via setState on every server message, manages reconnect.
 export function createRoomConnection(roomCode: string, playerName: string) {
   const [state, setState] = createStore<RoomState>({
     playerId: "",

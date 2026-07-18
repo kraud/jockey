@@ -1,5 +1,9 @@
 import { createSignal, Show } from "solid-js";
 import { useNavigate } from "@solidjs/router";
+// ── frontend/src/views/HomeView.tsx — Landing page: name capture + create-room and join-room flows, persists name in sessionStorage. ──
+// Depends on: @solidjs/router, solid-js.
+// Used by: App.tsx.
+
 
 export default function HomeView() {
   const navigate = useNavigate();

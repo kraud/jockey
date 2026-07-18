@@ -2,6 +2,10 @@ import { For, createSignal, Show } from "solid-js";
 import type { RoomState } from "../ws/store";
 import type { ClientMessage, Suit } from "../../../shared/messages"
 import { SUITS } from "../../../shared/messages"
+// ── frontend/src/views/BiddingView.tsx — BIDDING phase UI: suit + bid amount selection, host's "place bid for player" form, per-player remaining time, auto-close indicator. ──
+// Depends on: solid-js, ../../../shared/messages.
+// Used by: RoomView.tsx.
+
 
 interface Props {
   state: RoomState;

@@ -20,6 +20,10 @@ import { applyDraw, applyDrawStep, applyFlipStep, placements } from "./race";
 import { computeSettlement } from "./settlement";
 import { makeTrack, makeDeckState } from "./setup";
 
+// ── src/game/machine.ts — Pure state-machine transitions; each fn takes a Room, returns a cloned Room; no I/O. ──
+// Depends on: ./types, ./race, ./settlement, ./setup, ./random.
+// Used by: src/room.ts (DO dispatch and alarm), tests/machine.test.ts.
+
 // ── Error type ───────────────────────────────────────────────────────
 
 export class GameError extends Error {
@@ -53,6 +57,7 @@ function findPlayer(room: Room, playerId: string): Player {
 
 // ── LOBBY ────────────────────────────────────────────────────────────
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function hostAddPlayer(
   room: Room,
   params: { id: string; name: string; type: PlayerType; isHost: boolean },
@@ -80,6 +85,7 @@ export function hostAddPlayer(
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function hostRemovePlayer(
   room: Room,
   params: { playerId: string },
@@ -96,6 +102,7 @@ export function hostRemovePlayer(
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function hostSetLock(
   room: Room,
   params: { locked: boolean },
@@ -106,6 +113,7 @@ export function hostSetLock(
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function hostSetTrackLength(
   room: Room,
   params: { length: number },
@@ -122,6 +130,7 @@ export function hostSetTrackLength(
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function hostSetRacePacing(
   room: Room,
   params: { gapDeckMs: number; gapTrackMs: number },
@@ -133,6 +142,7 @@ export function hostSetRacePacing(
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function hostSetDistributionTimeLimit(
   room: Room,
   params: { timeLimitMs: number },
@@ -149,6 +159,7 @@ export function hostSetDistributionTimeLimit(
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function hostRenamePlayer(
   room: Room,
   params: { playerId: string; name: string },
@@ -163,6 +174,7 @@ export function hostRenamePlayer(
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function selfRename(
   room: Room,
   params: { playerId: string; name: string },
@@ -177,6 +189,7 @@ export function selfRename(
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function hostStartRace(room: Room): Room {
   assertPhase(room, "LOBBY");
   const r = structuredClone(room);
@@ -196,6 +209,7 @@ export function hostStartRace(room: Room): Room {
 
 // ── BIDDING ──────────────────────────────────────────────────────────
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function placeBid(
   room: Room,
   params: { playerId: string; suit: Suit; amount: number },
@@ -244,6 +258,7 @@ export function placeBid(
 
 // ── BIDDING → SETUP → RACING ────────────────────────────────────────
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function closeBidding(room: Room, rng: RNG): Room {
   assertPhase(room, "BIDDING");
 
@@ -267,6 +282,7 @@ export function closeBidding(room: Room, rng: RNG): Room {
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function startRace(room: Room): Room {
   assertPhase(room, "COUNTDOWN");
   const r = structuredClone(room);
@@ -282,6 +298,7 @@ export function startRace(room: Room): Room {
  * Returns the room with draw events applied.  The caller must follow up
  * with runFlipStep after the deck gap elapses.
  */
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function runDrawStep(room: Room, rng: RNG): Room {
   assertPhase(room, "RACING");
 
@@ -305,6 +322,7 @@ export function runDrawStep(room: Room, rng: RNG): Room {
   return applyDrawStep(r, card);
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 /**
  * Stage 2 of a race tick: flip a track card and apply regression.
  */
@@ -312,6 +330,7 @@ export function runFlipStep(room: Room): Room {
   return applyFlipStep(room);
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 /**
  * Draw the next card from the deck and apply it to the race.
  * Full composition: draw step + flip step in one call.
@@ -323,6 +342,7 @@ export function drawNextCard(room: Room, rng: RNG): Room {
 
 // ── SETTLEMENT ───────────────────────────────────────────────────────
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function settleRound(room: Room): Room {
   assertPhase(room, "SETTLEMENT");
 
@@ -361,6 +381,7 @@ export function settleRound(room: Room): Room {
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function startDistribution(room: Room): Room {
   assertPhase(room, "SETTLEMENT");
 
@@ -372,6 +393,7 @@ export function startDistribution(room: Room): Room {
 
 // ── DISTRIBUTION ─────────────────────────────────────────────────────
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function assignDrink(
   room: Room,
   params: { fromPlayerId: string; toPlayerId: string; amount: number },
@@ -406,6 +428,7 @@ export function assignDrink(
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function hostAssignDrink(
   room: Room,
   params: { fromPlayerId: string; toPlayerId: string; amount: number },
@@ -440,6 +463,7 @@ export function hostAssignDrink(
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function clearDrink(
   room: Room,
   params: { fromPlayerId: string; toPlayerId: string; amount: number },
@@ -468,6 +492,7 @@ export function clearDrink(
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function hostClearDrink(
   room: Room,
   params: { fromPlayerId: string; toPlayerId: string; amount: number },
@@ -496,6 +521,7 @@ export function hostClearDrink(
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function markDistributionDone(
   room: Room,
   params: { playerId: string },
@@ -511,6 +537,7 @@ export function markDistributionDone(
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 /**
  * Auto-distribute all unassigned give-drinks uniformly at random over
  * all players (self-included).  Transitions to READY.
@@ -541,6 +568,7 @@ export function finalizeDistribution(room: Room, rng: RNG): Room {
 
 // ── READY ────────────────────────────────────────────────────────────
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function markReady(
   room: Room,
   params: { playerId: string; ready: boolean },
@@ -559,6 +587,7 @@ export function markReady(
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 /**
  * Reset race state and return to LOBBY.  Keeps player identities and
  * trackLength; resets positions, placements, drinks, race log, bids.
@@ -585,6 +614,7 @@ export function finishRound(room: Room): Room {
   return r;
 }
 
+// ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
 export function endGame(room: Room): Room {
   const r = structuredClone(room);
   r.state = "LOBBY";

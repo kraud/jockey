@@ -1,5 +1,9 @@
 import type { ServerMessage, Room, Suit, SettlementResult } from "../../../shared/messages"
 
+// ── frontend/src/ws/handle.ts — Pure reducer applyServerMessage(state, msg) → RoomState + parseServerMessage type guard; the single place that maps ServerMessage → client state. ──
+// Depends on: ../../../shared/messages.
+// Used by: store.ts.
+
 // ── Frontend room state ──────────────────────────────────────────────
 export interface RoomState {
   playerId: string;
@@ -35,6 +39,7 @@ export function parseServerMessage(raw: string): ServerMessage | null {
 
 // ── State transitions ────────────────────────────────────────────────
 
+// ⚠️ STATE MUTATION (pure): returns a new RoomState per ServerMessage case; caller (store.ts) wraps it in setState.
 export function applyServerMessage(state: RoomState, msg: ServerMessage): RoomState {
   switch (msg.type) {
     case "room_joined":

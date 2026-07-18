@@ -2,6 +2,10 @@ import { For, Show, createSignal, createMemo } from "solid-js";
 import type { RoomState } from "../ws/store";
 import type { ClientMessage, Suit } from "../../../shared/messages";
 import { SUITS } from "../../../shared/messages";
+// ── frontend/src/views/LobbyView.tsx — LOBBY phase UI: player list, host controls (lock, kick, hosted-player add, track length, race pacing, distribution timer, start race). ──
+// Depends on: solid-js, ../../../shared/messages.
+// Used by: RoomView.tsx.
+
 
 interface Props {
   state: RoomState;

@@ -2,6 +2,10 @@ import { For, createMemo } from "solid-js";
 import type { RoomState } from "../ws/store";
 import { SUITS } from "../../../shared/messages";
 import type { RaceLogEvent } from "../../../shared/messages";
+// ── frontend/src/views/RacingView.tsx — RACING phase UI: animated horse grid, face-down track cards, grouped race-log turn stream, settlement summary. ──
+// Depends on: solid-js, ../../../shared/messages.
+// Used by: RoomView.tsx.
+
 
 interface Props {
   state: RoomState;

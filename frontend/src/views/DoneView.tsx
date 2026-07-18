@@ -1,6 +1,10 @@
 import { For, Show } from "solid-js";
 import type { RoomState } from "../ws/store";
 import type { ClientMessage } from "../../../shared/messages"
+// ── frontend/src/views/DoneView.tsx — READY phase UI: per-player drinksToConsume tally, ready toggle, host's end-of-round controls (next round / end game). ──
+// Depends on: solid-js, ../../../shared/messages.
+// Used by: RoomView.tsx.
+
 
 interface Props {
   state: RoomState;

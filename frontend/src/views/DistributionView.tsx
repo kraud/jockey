@@ -1,6 +1,10 @@
 import { For, Show, onCleanup, createSignal } from "solid-js";
 import type { RoomState } from "../ws/store";
 import type { ClientMessage } from "../../../shared/messages"
+// ── frontend/src/views/DistributionView.tsx — DISTRIBUTION phase UI: per-player give pool, drink-assignment controls, deadline ticker, "I'm done" toggle, host finalize action. ──
+// Depends on: solid-js, ../../../shared/messages.
+// Used by: RoomView.tsx.
+
 
 interface Props {
   state: RoomState;

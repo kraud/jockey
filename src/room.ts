@@ -37,6 +37,10 @@ import type { ClientMessage, ServerMessage } from "./ws/messages";
 import { placements } from "./game/race";
 import { computeSettlement } from "./game/settlement";
 
+// ── src/room.ts — Durable Object per room; owns in-memory Room state, WebSocket fan-out, and the alarm-driven race loop. ──
+// Depends on: ./game/machine, ./game/types, ./game/race, ./game/settlement, ./game/random, ./ws/messages.
+// Used by: src/index.ts (Worker stub), wrangler.toml (DO binding).
+
 // ── Constants ────────────────────────────────────────────────────────
 
 // Pacing is now per-room (raceGapDeckMs / raceGapTrackMs); this constant
@@ -78,6 +82,7 @@ export class Room extends DurableObject<Env> {
 
   // ── HTTP entry ───────────────────────────────────────────────────
 
+  // ⚠️ STATE MUTATION: /init creates empty room + persists, /state is read-only (no mutation), WS upgrade forwards to DO and may update roomCode + persist.
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
 
@@ -129,6 +134,7 @@ export class Room extends DurableObject<Env> {
 
   // ── WebSocket handlers ────────────────────────────────────────────
 
+  // ⚠️ STATE MUTATION: parses + dispatches every inbound WS message; mutations happen inside dispatch() and its callees.
   async webSocketMessage(ws: WebSocket, raw: string): Promise<void> {
     let msg: ClientMessage;
     try {
@@ -154,6 +160,7 @@ export class Room extends DurableObject<Env> {
     }
   }
 
+  // ⚠️ STATE MUTATION: marks player disconnected (in-place mutate on player.isConnected), persists, broadcasts player_left.
   async webSocketClose(
     ws: WebSocket,
     _code: number,
@@ -171,6 +178,7 @@ export class Room extends DurableObject<Env> {
     }
   }
 
+  // ⚠️ STATE MUTATION: marks player disconnected on WS error; same side effects as webSocketClose.
   async webSocketError(ws: WebSocket, _error: unknown): Promise<void> {
     const att = ws.deserializeAttachment() as Attachment | null;
     if (att && this.room) {
@@ -185,6 +193,7 @@ export class Room extends DurableObject<Env> {
 
   // ── Alarm handler ─────────────────────────────────────────────────
 
+  // ⚠️ STATE MUTATION: the main alarm loop — mutates this.room across every phase transition (bidding timeout, countdown→racing, draw/flip cycle, dist timeout, ready timeout), persists, and broadcasts phase_changed / race_log / state_sync.
   async alarm(): Promise<void> {
     if (!this.room) return;
     const now = Date.now();
@@ -327,6 +336,7 @@ export class Room extends DurableObject<Env> {
 
   // ── Message dispatch ──────────────────────────────────────────────
 
+  // ⚠️ STATE MUTATION: the central message dispatch switch — every case arm calls a machine fn, assigns this.room, persists, and broadcasts.
   private async dispatch(
     ws: WebSocket,
     msg: ClientMessage,
@@ -597,6 +607,7 @@ export class Room extends DurableObject<Env> {
 
   // ── Phase advancement (host) ─────────────────────────────────────
 
+  // ⚠️ STATE MUTATION: host-forced phase advancement — mutates this.room, persists, broadcasts phase_changed, and reschedules the alarm.
   private async handleAdvancePhase(): Promise<void> {
     if (!this.room) return;
     const now = Date.now();
@@ -651,6 +662,7 @@ export class Room extends DurableObject<Env> {
 
   // ── Join room handler ─────────────────────────────────────────────
 
+  // ⚠️ STATE MUTATION: adds player to room, persists, sends room_joined to joiner and player_joined broadcast to others.
   private handleJoinRoom(ws: WebSocket, msg: Extract<ClientMessage, { type: "join_room" }>): void {
     if (!this.room) return;
     const isHost = this.room.players.length === 0;
@@ -758,6 +770,7 @@ export class Room extends DurableObject<Env> {
   /**
    * If all players are ready, immediately finish the round.
    */
+  // ⚠️ STATE MUTATION: if all players ready, auto-finishes the round — mutates this.room, persists, deletes alarm, broadcasts phase_changed and state_sync.
   private async checkAllReady(): Promise<void> {
     if (!this.room) return;
     if (this.room.state !== "READY") return;
@@ -776,6 +789,7 @@ export class Room extends DurableObject<Env> {
    * If all players have marked distribution done, cancel the deadline
    * alarm so the host can trigger the transition manually.
    */
+  // ⚠️ STATE MUTATION: if all players marked distribution done, cancels deadline alarm — mutates this.room.distDeadlineMs, persists, broadcasts state_sync.
   private async checkAllDone(): Promise<void> {
     if (!this.room || this.room.state !== "DISTRIBUTION") return;
     const allDone = this.room.players.every((p) => p.drinks.gaveAll);

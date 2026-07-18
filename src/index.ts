@@ -1,6 +1,10 @@
 import type { Env } from "./room";
 export { Room } from "./room";
 
+// ── src/index.ts — Worker HTTP router; POST /api/room, GET /api/room/:code/state, GET /ws?room=…; no game state. ──
+// Depends on: ./room (Room class, Env type).
+// Used by: wrangler.toml (entry point).
+
 // ── Room code generation ─────────────────────────────────────────────
 
 const ROOM_CODE_LENGTH = 4;

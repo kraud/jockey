@@ -1,6 +1,10 @@
 import type { RNG } from "./random";
 import type { Card, Horse, Room, Suit } from "./types";
 
+// ── src/game/race.ts — Race primitives: applyDrawStep, applyFlipStep, derived placements and last-placed-horse lookup. ──
+// Depends on: ./types, ./random.
+// Used by: src/game/machine.ts, tests/race.test.ts.
+
 // ── Derived helpers ──────────────────────────────────────────────────
 
 /**

@@ -1,3 +1,7 @@
+// ── src/game/types.ts — Domain types: Suit, Player, Bid, Horse, Card, TrackCard, DeckState, Room, Phase, RaceLogEvent. ──
+// Depends on: none.
+// Used by: every other file in src/game/, plus shared/messages.ts (kept in sync), plus frontend/src/.
+
 // ── Suits ────────────────────────────────────────────────────────────
 export type Suit = "Coins" | "Cups" | "Swords" | "Clubs";
 

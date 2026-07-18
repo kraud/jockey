@@ -33,3 +33,9 @@
 - **Upgrades:**
   - **Selective Reversal:** The polarity inversion only applies to cards matching your active suit — other suits resolve normally (backward) as they would on a standard track.
   - **Chaos Circuit:** Each track card now has a 50% chance (coin-flip) to either push forward or push backward, applied independently per trigger. Future upgrades can shift the odds in your favor.
+
+### Reverse Joker
+- **Description:** When a Joker card is drawn, instead of all non-leading horses advancing one step (the base Joker stumble mechanic), the leading horse(s) regress one step instead. The Joker no longer helps the pack catch up — it solely punishes whoever is in front. A horse cannot regress below step 0.
+- **Beneficiary:** Global (State Change)
+- **Upgrades:**
+  - **Mass Momentum Collapse:** If more than one horse is tied for the lead, each tied horse regresses N steps (where N = the number of tied horses), instead of the usual 1. A horse cannot regress below step 0. At 4 tied horses, each would regress 4 steps.

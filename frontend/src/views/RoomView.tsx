@@ -10,6 +10,10 @@ import DoneView from "./DoneView";
 import CountdownView from "./CountdownView";
 import ResultsView from "./ResultsView";
 
+// ── frontend/src/views/RoomView.tsx — Phase router: reads room.state, dispatches to the right per-phase view component; owns the createRoomConnection lifecycle. ──
+// Depends on: @solidjs/router, solid-js, ../ws/store, all sibling view files.
+// Used by: App.tsx.
+
 export default function RoomView() {
   const params = useParams();
   const [search] = useSearchParams<{ name?: string }>();

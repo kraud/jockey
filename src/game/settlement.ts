@@ -1,5 +1,9 @@
 import type { Bid, SettlementResult, Suit } from "./types";
 
+// ── src/game/settlement.ts — Payout table: bids + placements → SettlementResult[] (V1 2/1/-1/-2 multiplier). ──
+// Depends on: ./types (only).
+// Used by: src/game/machine.ts (settleRound), src/room.ts (alarm).
+
 /**
  * Compute settlement for all bidders given the race placements.
  *

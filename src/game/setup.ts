@@ -3,6 +3,10 @@ import type { DeckState, TrackCard } from "./types";
 import { SUITS } from "./types";
 import { makeDeck } from "./random";
 
+// ── src/game/setup.ts — Build the track (length random-suit cards) and the initial shuffled deck state. ──
+// Depends on: ./types, ./random.
+// Used by: src/game/machine.ts (closeBidding).
+
 /**
  * Build the track: `length` face-down cards, each suit picked uniformly at
  * random.  Indexed 1..length.

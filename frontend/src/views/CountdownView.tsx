@@ -1,5 +1,9 @@
 import { createSignal, onCleanup } from "solid-js";
 import type { RoomState } from "../ws/store";
+// ── frontend/src/views/CountdownView.tsx — COUNTDOWN phase UI: 3-2-1-GO! ticker derived from room().countdownMs polled at 100 ms. ──
+// Depends on: solid-js.
+// Used by: RoomView.tsx.
+
 
 interface Props {
   state: RoomState;

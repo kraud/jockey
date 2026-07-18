@@ -3,6 +3,10 @@ import type { RoomState } from "../ws/store";
 import type { ClientMessage } from "../../../shared/messages";
 import { SUITS } from "../../../shared/messages";
 import type { RaceLogEvent } from "../../../shared/messages";
+// ── frontend/src/views/ResultsView.tsx — SETTLEMENT phase UI: placement table, per-bidder settlement breakdown, "Continue to Distribution" host action. ──
+// Depends on: solid-js, ../../../shared/messages.
+// Used by: RoomView.tsx.
+
 
 interface Props {
   state: RoomState;

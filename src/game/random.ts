@@ -1,6 +1,10 @@
 import type { Card, Suit } from "./types";
 import { SUITS } from "./types";
 
+// ── src/game/random.ts — RNG abstraction (interface + MathRNG prod / SeededRNG test) and the 44-card deck factory. ──
+// Depends on: ./types.
+// Used by: src/room.ts (MathRNG instance), src/game/machine.ts, src/game/setup.ts, all tests/*.test.ts (SeededRNG).
+
 // ── RNG abstraction ──────────────────────────────────────────────────
 
 /** Reproducible or real random-number generator. */

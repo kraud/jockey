@@ -52,6 +52,32 @@ NB! Always evaluate the user's gameplay ideas against the principles in .context
 - Always conclude Phase 1 and Phase 2 responses with a brief summary of what is currently locked in versus what is still pending.
 
 
+
+## In-Code Documentation Standard
+
+Every file in `src/` and `frontend/src/` (excluding the one-line `src/ws/messages.ts` re-export) carries a 3-line header block immediately after the import list, in this exact form:
+
+```ts
+// ── <File> — <single-line responsibility> ──
+// Depends on: <comma-separated paths>.
+// Used by: <comma-separated paths>.
+```
+
+Two further rules apply to any function that mutates or produces a new `Room`:
+
+- **Server/DO methods** that mutate `this.room` AND trigger side effects (persist + broadcast) get this label on the line directly above the signature:
+  ```ts
+  // ⚠️ STATE MUTATION: mutates this.room, persists to ctx.storage, and may broadcast to all WebSockets.
+  ```
+  Adjust the trailing description per method when side effects differ.
+
+- **Pure machine functions** in `src/game/machine.ts` that take a `Room` and return a new `Room` via `structuredClone` get this label on the line directly above the signature (or above the JSDoc if one precedes it):
+  ```ts
+  // ⚠️ STATE MUTATION (pure): structuredClone + mutate clone; caller must persist + broadcast.
+  ```
+
+Full worked examples and edge cases live in `.context/.implementation/DEVELOPER_COOKBOOK.md` § In-Code Documentation Standard.
+
 ---
 
 ## The Captain's Log Protocol (Data Tracking)

@@ -1,7 +1,7 @@
 # Random TODOs & Brainstorms
 *A simple list of ideas, quick fixes, and out-of-scope reminders.*
 
-- [ ] Find a better name for the game (currently just called 'Horse racing'). Ideas so far: 'Derby Day Suit', 'Deck Jockey', 'Card Jockey', 'Suit Jockey'
+- [ ] Find a better name for the game (currently just called 'Horse racing'). Ideas so far: 'Derby Day Suit', 'Deck Jockey', 'Card Jockey', 'Suit Jockey', 'Derby al palo' (localized)
 - [ ] Add settings on how the track-cards are set (full-random, force 1 per suit)
 - [ ] Add track/grid layout variations to the game design and to the frontend implementation. The current V1 implementation is locked to one orientation (horizontal, track-cards on the top row, horse rows below, left-to-right progression). The user has proposed two further orientations to support as optional host settings:
   * **Horizontal, track-cards on the bottom row** — mirrors the WikiHow example. The header row holds the horse rows; the footer row holds the track-cards. Progression still runs left-to-right.
