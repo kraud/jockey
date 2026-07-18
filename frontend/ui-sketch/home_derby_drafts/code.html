@@ -1,0 +1,240 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>DERBY &amp; DRAFTS | The Social Racing Game</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;family=Space+Grotesk:wght@700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Space+Grotesk:wght@100..900&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .glow-border-primary {
+            box-shadow: 0 0 15px rgba(255, 185, 95, 0.3);
+            border: 2px solid #ffc174;
+        }
+        .glow-border-secondary {
+            box-shadow: 0 0 15px rgba(170, 2, 102, 0.3);
+            border: 2px solid #ffb0cd;
+        }
+        @keyframes pulse-gold {
+            0%, 100% { box-shadow: 0 0 15px rgba(255, 193, 116, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(255, 193, 116, 0.7); }
+        }
+        .animate-pulse-gold {
+            animation: pulse-gold 2s infinite ease-in-out;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-error": "#690005",
+                      "on-background": "#dae2fd",
+                      "on-primary": "#472a00",
+                      "on-secondary-fixed": "#3e0022",
+                      "surface-dim": "#0b1326",
+                      "primary-fixed": "#ffddb8",
+                      "on-tertiary": "#003640",
+                      "primary": "#ffc174",
+                      "on-tertiary-fixed": "#001f26",
+                      "surface": "#0b1326",
+                      "on-tertiary-fixed-variant": "#004e5c",
+                      "on-surface": "#dae2fd",
+                      "outline-variant": "#534434",
+                      "secondary-container": "#aa0266",
+                      "on-tertiary-container": "#004b58",
+                      "background": "#0b1326",
+                      "tertiary-fixed-dim": "#4cd7f6",
+                      "outline": "#a08e7a",
+                      "inverse-surface": "#dae2fd",
+                      "surface-bright": "#31394d",
+                      "secondary": "#ffb0cd",
+                      "error-container": "#93000a",
+                      "error": "#ffb4ab",
+                      "surface-container-highest": "#2d3449",
+                      "primary-container": "#f59e0b",
+                      "on-secondary-fixed-variant": "#8c0053",
+                      "on-error-container": "#ffdad6",
+                      "secondary-fixed-dim": "#ffb0cd",
+                      "tertiary-container": "#29c1df",
+                      "tertiary": "#54ddfc",
+                      "on-surface-variant": "#d8c3ad",
+                      "surface-container": "#171f33",
+                      "surface-container-high": "#222a3d",
+                      "on-primary-container": "#613b00",
+                      "on-secondary-container": "#ffbad3",
+                      "inverse-primary": "#855300",
+                      "primary-fixed-dim": "#ffb95f",
+                      "on-secondary": "#640039",
+                      "surface-tint": "#ffb95f",
+                      "surface-container-lowest": "#060e20",
+                      "surface-container-low": "#131b2e",
+                      "surface-variant": "#2d3449",
+                      "inverse-on-surface": "#283044",
+                      "secondary-fixed": "#ffd9e4",
+                      "on-primary-fixed": "#2a1700",
+                      "tertiary-fixed": "#acedff",
+                      "on-primary-fixed-variant": "#653e00"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "32px",
+                      "base": "8px",
+                      "card-padding": "40px",
+                      "stack-gap-lg": "48px",
+                      "container-margin": "64px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-bold": ["Space Grotesk"],
+                      "headline-lg": ["Inter"],
+                      "display-xl": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["48px", {"lineHeight": "56px", "fontWeight": "800"}],
+                      "headline-lg-mobile": ["40px", {"lineHeight": "44px", "fontWeight": "900"}],
+                      "body-lg": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-bold": ["18px", {"lineHeight": "24px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "headline-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "900"}],
+                      "display-xl": ["120px", {"lineHeight": "110px", "letterSpacing": "-0.04em", "fontWeight": "900"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-lg overflow-x-hidden selection:bg-primary selection:text-on-primary">
+<!-- TopAppBar from JSON -->
+<header class="w-full top-0 sticky z-50 bg-surface/70 backdrop-blur-xl border-b-4 border-primary/20 shadow-[0_0_20px_rgba(255,185,95,0.3)]">
+<div class="flex justify-between items-center w-full px-gutter py-4">
+<div class="font-headline-lg text-primary uppercase tracking-tighter">
+                DERBY &amp; DRAFTS
+            </div>
+<div class="flex gap-4 items-center">
+<button class="text-on-surface-variant hover:scale-105 transition-transform active:scale-95">
+<span class="material-symbols-outlined text-3xl">help</span>
+</button>
+<button class="text-on-surface-variant hover:scale-105 transition-transform active:scale-95">
+<span class="material-symbols-outlined text-3xl">settings</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Background Shader Atmosphere -->
+<div class="fixed inset-0 -z-10 opacity-30">
+
+</div>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col items-center justify-center px-gutter py-stack-gap-lg max-w-7xl mx-auto w-full">
+<!-- Hero Section -->
+<section class="text-center mb-stack-gap-lg space-y-4">
+<h1 class="font-display-xl text-display-xl text-primary drop-shadow-[0_0_30px_rgba(255,193,116,0.5)]">
+                DERBY &amp; DRAFTS
+            </h1>
+<p class="font-headline-md text-headline-md text-on-surface-variant max-w-4xl mx-auto">
+                The social racing game where <span class="text-secondary italic">every draw is a drink.</span>
+</p>
+</section>
+<!-- Player Identification -->
+<section class="w-full max-w-2xl mb-stack-gap-lg">
+<div class="glass-panel p-8 rounded-xl border-2 border-primary/20 flex flex-col items-center gap-6">
+<label class="font-label-bold text-label-bold text-primary uppercase tracking-widest" for="player-name">
+                    Enter Your Name
+                </label>
+<div class="flex gap-4 w-full items-center max-w-xl"><input class="flex-1 bg-surface-container-low border-b-4 border-primary text-center font-headline-md text-headline-md text-on-surface focus:outline-none focus:border-secondary transition-colors p-4 rounded-t-lg px-8" id="player-name" placeholder="E.G. CHAMPION_CHUG" type="text"><button class="bg-primary text-on-primary p-4 rounded-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center shadow-lg" title="Auto-generate Name"><span class="material-symbols-outlined text-3xl">casino</span></button></div>
+</div>
+</section>
+<!-- Primary Actions Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-gutter w-full">
+<!-- Host Card -->
+<button class="group glass-panel rounded-xl p-card-padding flex flex-col items-center gap-6 border-4 border-primary/30 hover:border-primary hover:scale-[1.02] transition-all duration-300 text-center animate-pulse-gold opacity-30 cursor-not-allowed pointer-events-none">
+<div class="bg-primary/20 w-32 h-32 rounded-full flex items-center justify-center group-hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-7xl text-primary group-hover:text-on-primary" style="font-variation-settings: &quot;FILL&quot; 1;">stadium</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-primary mb-2">HOST A RACE</h2>
+<p class="font-body-lg text-on-surface-variant">Create a new room and control the track.</p>
+</div>
+<div class="w-full h-20 bg-primary flex items-center justify-center rounded-xl shadow-lg">
+<span class="font-label-bold text-on-primary text-2xl uppercase">Start Room</span>
+</div>
+</button>
+<!-- Join Card -->
+<div class="glass-panel rounded-xl p-card-padding flex flex-col items-center gap-6 border-4 border-secondary/30 hover:border-secondary transition-all duration-300 text-center group opacity-30 cursor-not-allowed pointer-events-none">
+<div class="bg-secondary/20 w-32 h-32 rounded-full flex items-center justify-center group-hover:bg-secondary transition-colors">
+<span class="material-symbols-outlined text-7xl text-secondary group-hover:text-on-secondary">confirmation_number</span>
+</div>
+<div class="w-full">
+<h2 class="font-headline-md text-headline-md text-secondary mb-2">JOIN A RACE</h2>
+<p class="font-body-lg text-on-surface-variant mb-6">Enter the 5-character room code.</p>
+<div class="flex gap-4 items-center justify-center">
+<input class="flex-1 bg-surface-container-high border-2 border-secondary/40 text-center font-headline-md text-headline-md text-on-surface focus:outline-none focus:border-secondary transition-all p-4 rounded-xl uppercase w-full py-6" maxlength="5" placeholder="CODE" type="text">
+<button class="bg-secondary text-on-secondary h-full aspect-square flex items-center justify-center rounded-xl hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-4xl">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Decorative Horse Element -->
+
+</main>
+<!-- Bottom Navigation Shell from JSON -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-4 bg-surface-container-highest/80 backdrop-blur-2xl border-t-4 border-secondary/30 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] md:hidden">
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-xl px-6 py-2 scale-110" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-bold text-label-bold">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:bg-surface-bright/20" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="font-label-bold text-label-bold">My Stats</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:bg-surface-bright/20" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-label-bold text-label-bold">Rules</span>
+</a>
+</nav>
+<!-- Floating Background Images for Texture -->
+
+
+<script>
+        // Micro-interactions for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                const icon = btn.querySelector('.material-symbols-outlined');
+                if (icon) icon.classList.add('scale-110');
+            });
+            btn.addEventListener('mouseleave', () => {
+                const icon = btn.querySelector('.material-symbols-outlined');
+                if (icon) icon.classList.remove('scale-110');
+            });
+        });
+
+        // Input effect
+        const nameInput = document.getElementById('player-name');
+        nameInput.addEventListener('focus', () => {
+            nameInput.parentElement.classList.add('glow-border-primary');
+        });
+        nameInput.addEventListener('blur', () => {
+            nameInput.parentElement.classList.remove('glow-border-primary');
+        });
+    </script>
+
+
+</body></html>

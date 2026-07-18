@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Derby &amp; Drafts | The Big Screen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;family=Space+Grotesk:wght@700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-container": "#aa0266",
+                    "surface-bright": "#31394d",
+                    "secondary-fixed-dim": "#ffb0cd",
+                    "tertiary-fixed-dim": "#4cd7f6",
+                    "on-tertiary-fixed-variant": "#004e5c",
+                    "surface-container-low": "#131b2e",
+                    "on-primary": "#472a00",
+                    "on-surface": "#dae2fd",
+                    "on-surface-variant": "#d8c3ad",
+                    "background": "#0b1326",
+                    "surface-container-high": "#222a3d",
+                    "secondary": "#ffb0cd",
+                    "primary-fixed-dim": "#ffb95f",
+                    "inverse-on-surface": "#283044",
+                    "surface-container-highest": "#2d3449",
+                    "error-container": "#93000a",
+                    "error": "#ffb4ab",
+                    "surface-container-lowest": "#060e20",
+                    "on-primary-fixed-variant": "#653e00",
+                    "secondary-fixed": "#ffd9e4",
+                    "on-secondary-fixed-variant": "#8c0053",
+                    "on-secondary": "#640039",
+                    "primary": "#ffc174",
+                    "on-tertiary-fixed": "#001f26",
+                    "on-error": "#690005",
+                    "outline-variant": "#534434",
+                    "tertiary-container": "#29c1df",
+                    "primary-fixed": "#ffddb8",
+                    "tertiary-fixed": "#acedff",
+                    "surface-variant": "#2d3449",
+                    "primary-container": "#f59e0b",
+                    "surface": "#0b1326",
+                    "surface-dim": "#0b1326",
+                    "on-secondary-fixed": "#3e0022",
+                    "surface-tint": "#ffb95f",
+                    "on-primary-container": "#613b00",
+                    "on-tertiary": "#003640",
+                    "on-tertiary-container": "#004b58",
+                    "on-error-container": "#ffdad6",
+                    "inverse-surface": "#dae2fd",
+                    "on-background": "#dae2fd",
+                    "inverse-primary": "#855300",
+                    "outline": "#a08e7a",
+                    "surface-container": "#171f33",
+                    "on-secondary-container": "#ffbad3",
+                    "tertiary": "#54ddfc",
+                    "on-primary-fixed": "#2a1700",
+                    "suit-coins": "#ffc174",
+                    "suit-cups": "#ffb0cd",
+                    "suit-swords": "#54ddfc",
+                    "suit-clubs": "#4ade80"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "32px",
+                    "container-margin": "64px",
+                    "card-padding": "40px",
+                    "stack-gap-lg": "48px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "label-bold": ["Space Grotesk"],
+                    "headline-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "display-xl": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["48px", {"lineHeight": "56px", "fontWeight": "800"}],
+                    "label-bold": ["18px", {"lineHeight": "24px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "900"}],
+                    "headline-lg-mobile": ["40px", {"lineHeight": "44px", "fontWeight": "900"}],
+                    "display-xl": ["120px", {"lineHeight": "110px", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                    "body-lg": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .track-grid {
+            display: grid;
+            grid-template-columns: 80px 100px repeat(6, 1fr) 100px;
+            gap: 4px;
+            background: rgba(6, 14, 32, 0.5);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .track-cell {
+            background: rgba(11, 19, 38, 0.8);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #1e293b 0%, #0b1326 100%);
+            border: 2px solid #ffb95f;
+            background-image: radial-gradient(circle at center, rgba(255, 185, 95, 0.1) 0%, transparent 70%);
+        }
+
+        @keyframes pulse-neon {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 185, 95, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(255, 185, 95, 0.6); }
+        }
+
+        .active-pulse {
+            animation: pulse-neon 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen overflow-hidden font-body-lg">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-gutter h-20 bg-surface/70 backdrop-blur-xl border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-3xl font-black text-primary tracking-tighter">Derby &amp; Drafts</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<nav class="flex gap-6">
+<a class="font-label-bold text-label-bold text-primary" href="#">Race</a>
+<a class="font-label-bold text-label-bold text-on-surface-variant hover:text-white" href="#">Players</a>
+<a class="font-label-bold text-label-bold text-on-surface-variant hover:text-white" href="#">Bets</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined">timer</span>
+<span class="font-label-bold">04:20</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant">group</span>
+<span class="font-label-bold">8 Players</span>
+</div>
+</div>
+</header>
+<!-- Main Game Canvas -->
+<main class="pt-24 pb-32 px-container-margin h-screen flex flex-col gap-8">
+<!-- Smaller Game State Header -->
+<section class="flex items-center justify-center gap-12 py-4">
+<!-- Draw Pile (Smaller) -->
+<div class="flex flex-col items-center gap-2">
+<div class="relative w-32 h-48 card-back rounded-lg flex items-center justify-center shadow-xl transform hover:scale-105 transition-transform cursor-pointer">
+<span class="font-headline-md text-primary opacity-20 select-none">?</span>
+<div class="absolute -bottom-2 -right-2 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold">
+                        42 LEFT
+                    </div>
+</div>
+<p class="text-xs font-label-bold text-outline uppercase tracking-widest">Draw Pile</p>
+</div>
+<!-- Current Flip (Smaller) -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-40 h-60 glass-panel rounded-xl flex flex-col items-center justify-center relative active-pulse border-primary">
+<span class="material-symbols-outlined text-7xl text-suit-swords" style="font-variation-settings: 'FILL' 1;">swords</span>
+<div class="text-center mt-2">
+<p class="text-xl font-bold text-on-surface">7 of</p>
+<p class="text-2xl font-black text-suit-swords uppercase">Swords</p>
+</div>
+</div>
+<p class="text-xs font-label-bold text-outline uppercase tracking-widest">Last Drawn</p>
+</div>
+<!-- Current Status -->
+<div class="glass-panel p-6 rounded-xl border-l-4 border-primary max-w-xs">
+<p class="text-xs font-label-bold text-primary mb-1 uppercase">Race Update</p>
+<h3 class="text-xl font-bold text-on-surface">Swords leads!</h3>
+<p class="text-sm text-on-surface-variant">Cups is closing in fast...</p>
+</div>
+</section>
+<!-- The Track Grid -->
+<section class="flex-grow">
+<h2 class="text-2xl font-black text-on-surface mb-4">The Track</h2>
+<div class="track-grid">
+<!-- Header Row: Track Cards -->
+<div class="track-cell bg-transparent border-none"></div>
+<div class="track-cell font-label-bold text-outline uppercase text-sm">Start</div>
+<!-- Track Cards 1-6 -->
+<div class="track-cell bg-surface-container-high">
+<div class="text-center">
+<span class="material-symbols-outlined text-suit-swords block text-xl" style="font-variation-settings: 'FILL' 1;">swords</span>
+<span class="text-[10px] font-black text-on-surface uppercase">K Swords</span>
+</div>
+</div>
+<div class="track-cell bg-surface-container-high">
+<div class="text-center">
+<span class="material-symbols-outlined text-suit-swords block text-xl" style="font-variation-settings: 'FILL' 1;">swords</span>
+<span class="text-[10px] font-black text-on-surface uppercase">3 Swords</span>
+</div>
+</div>
+<div class="track-cell bg-surface-container-high">
+<div class="text-center">
+<span class="material-symbols-outlined text-suit-clubs block text-xl" style="font-variation-settings: 'FILL' 1;">forest</span>
+<span class="text-[10px] font-black text-on-surface uppercase">5 Clubs</span>
+</div>
+</div>
+<div class="track-cell opacity-40">
+<span class="material-symbols-outlined text-primary text-2xl">lock</span>
+</div>
+<div class="track-cell opacity-40">
+<span class="material-symbols-outlined text-primary text-2xl">lock</span>
+</div>
+<div class="track-cell opacity-40">
+<span class="material-symbols-outlined text-primary text-2xl">lock</span>
+</div>
+<div class="track-cell font-label-bold text-on-surface uppercase text-sm tracking-widest">End</div>
+<!-- Row 1: Coins -->
+<div class="track-cell font-black text-suit-coins text-xl">Co</div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<!-- Co is at Step 5 -->
+<div class="track-cell">
+<div class="text-suit-coins flex flex-col items-center">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+<span class="text-[10px] font-bold">Co</span>
+</div>
+</div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<!-- Row 2: Cups -->
+<div class="track-cell font-black text-suit-cups text-xl">Cu</div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<!-- Cu is at End -->
+<div class="track-cell relative">
+<div class="text-suit-cups flex flex-col items-center relative">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">liquor</span>
+<span class="text-[10px] font-bold">Cu</span>
+<span class="absolute -top-1 -right-2 bg-primary text-on-primary text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-black">1</span>
+</div>
+</div>
+<!-- Row 3: Swords -->
+<div class="track-cell font-black text-suit-swords text-xl">Sw</div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<!-- Sw is at Step 3 -->
+<div class="track-cell">
+<div class="text-suit-swords flex flex-col items-center">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">swords</span>
+<span class="text-[10px] font-bold">Sw</span>
+</div>
+</div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<!-- Row 4: Clubs -->
+<div class="track-cell font-black text-suit-clubs text-xl">Cl</div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<!-- Cl is at Step 2 -->
+<div class="track-cell">
+<div class="text-suit-clubs flex flex-col items-center">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">forest</span>
+<span class="text-[10px] font-bold">Cl</span>
+</div>
+</div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+<div class="track-cell"></div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-4 bg-surface-container-lowest/80 backdrop-blur-2xl border-t border-outline-variant">
+<div class="flex flex-col items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">sports_score</span>
+<span class="text-xs font-bold">Race</span>
+</div>
+<div class="flex flex-col items-center justify-center text-outline-variant hover:text-on-surface transition-colors cursor-pointer">
+<span class="material-symbols-outlined">group</span>
+<span class="text-xs font-bold">Players</span>
+</div>
+<div class="flex flex-col items-center justify-center text-outline-variant hover:text-on-surface transition-colors cursor-pointer">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-xs font-bold">Bets</span>
+</div>
+<div class="flex flex-col items-center justify-center text-outline-variant hover:text-on-surface transition-colors cursor-pointer">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-xs font-bold">Settings</span>
+</div>
+</nav>
+<!-- Action Button -->
+<button class="fixed bottom-24 left-1/2 -translate-x-1/2 h-16 px-10 glass-panel border-2 border-primary rounded-full hover:scale-105 active:scale-95 transition-all shadow-2xl flex items-center gap-3 z-[60]">
+<span class="material-symbols-outlined text-2xl text-primary">style</span>
+<span class="text-lg font-black text-white uppercase tracking-tight">Flip Next Card</span>
+</button>
+</body></html>

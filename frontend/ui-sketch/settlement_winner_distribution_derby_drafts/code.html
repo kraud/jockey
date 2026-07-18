@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Race Settlement - Derby &amp; Drafts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;family=Space+Grotesk:wght@700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Space+Grotesk:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 193, 116, 0.2);
+        }
+        .win-glow {
+            box-shadow: 0 0 30px rgba(255, 193, 116, 0.3);
+            border: 4px solid #ffc174;
+        }
+        @keyframes pulse-gold {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.02); }
+        }
+        .animate-pulse-gold {
+            animation: pulse-gold 2s infinite ease-in-out;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#ffddb8",
+                        "background": "#0b1326",
+                        "on-tertiary-container": "#004b58",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#004e5c",
+                        "secondary-container": "#aa0266",
+                        "on-primary": "#472a00",
+                        "surface-container-lowest": "#060e20",
+                        "on-secondary-container": "#ffbad3",
+                        "surface-bright": "#31394d",
+                        "outline": "#a08e7a",
+                        "surface-tint": "#ffb95f",
+                        "on-secondary-fixed": "#3e0022",
+                        "tertiary-fixed": "#acedff",
+                        "surface-container-low": "#131b2e",
+                        "primary": "#ffc174",
+                        "surface": "#0b1326",
+                        "inverse-surface": "#dae2fd",
+                        "primary-container": "#f59e0b",
+                        "secondary-fixed-dim": "#ffb0cd",
+                        "on-surface": "#dae2fd",
+                        "tertiary-container": "#29c1df",
+                        "secondary-fixed": "#ffd9e4",
+                        "secondary": "#ffb0cd",
+                        "on-primary-fixed-variant": "#653e00",
+                        "on-error": "#690005",
+                        "on-secondary-fixed-variant": "#8c0053",
+                        "tertiary-fixed-dim": "#4cd7f6",
+                        "on-tertiary-fixed": "#001f26",
+                        "on-background": "#dae2fd",
+                        "outline-variant": "#534434",
+                        "on-error-container": "#ffdad6",
+                        "error": "#ffb4ab",
+                        "surface-variant": "#2d3449",
+                        "surface-dim": "#0b1326",
+                        "inverse-primary": "#855300",
+                        "on-secondary": "#640039",
+                        "on-tertiary": "#003640",
+                        "primary-fixed-dim": "#ffb95f",
+                        "surface-container-highest": "#2d3449",
+                        "tertiary": "#54ddfc",
+                        "on-primary-fixed": "#2a1700",
+                        "surface-container-high": "#222a3d",
+                        "surface-container": "#171f33",
+                        "on-surface-variant": "#d8c3ad",
+                        "inverse-on-surface": "#283044",
+                        "on-primary-container": "#613b00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-padding": "40px",
+                        "stack-gap-lg": "48px",
+                        "container-margin": "64px",
+                        "base": "8px",
+                        "gutter": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "display-xl": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-bold": ["Space Grotesk"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["48px", { "lineHeight": "56px", "fontWeight": "800" }],
+                        "display-xl": ["120px", { "lineHeight": "110px", "letterSpacing": "-0.04em", "fontWeight": "900" }],
+                        "headline-lg-mobile": ["40px", { "lineHeight": "44px", "fontWeight": "900" }],
+                        "body-lg": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-bold": ["18px", { "lineHeight": "24px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-lg": ["64px", { "lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "900" }]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-gutter h-20 md:h-24 max-w-[1920px] mx-auto bg-surface/70 dark:bg-surface/70 backdrop-blur-xl border-b-2 border-outline-variant dark:border-outline-variant">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md-mobile md:text-headline-md font-black text-primary dark:text-primary tracking-tighter">Derby &amp; Drafts</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-primary text-3xl">group</span>
+<span class="material-symbols-outlined text-primary text-3xl">timer</span>
+</div>
+<div class="h-12 w-12 rounded-full border-2 border-primary overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional high-definition close-up portrait of a competitive player, looking determined and cool. The lighting is dramatic, with neon amber and deep blue highlights that reflect the high-stakes sportsbook atmosphere. The background is softly blurred, hinting at a modern gaming lounge with digital displays and sleek metallic finishes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGKAWbMFlQ50hpjGbFqUE2NPxryNe3AV-b2di___iM3fgRiWi80KyMvgrLAeu2AO0u0p0QipLo0yw6s18ho7fVV5JrZMb_RME8MNDMw2742XNplC_tamSxyFrV6Us-rDfuLMAwcAvbbelxY6_NGFN798rMh7NJX-R3Pcs4j1OQQ1CZk39Em_lQwvR8y9YCpJINm2tDv9s_A1fypy4Zskv3K-HB6N2rvz20cnlM1xbP-V8dBrUb4dM-A75CPHDEhD_lfI8fmDrzrdA"/>
+</div>
+</div>
+</header>
+<!-- Background Decoration -->
+<div class="fixed inset-0 pointer-events-none z-0 opacity-20 overflow-hidden">
+
+</div>
+<!-- Main Content Canvas -->
+<main class="relative z-10 pt-32 pb-32 px-gutter max-w-[1920px] mx-auto min-h-screen grid grid-cols-12 gap-gutter">
+<!-- Left Column: Final Standings (Leaderboard) -->
+<aside class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+<div class="glass-panel p-card-padding rounded-xl">
+<h2 class="font-label-bold text-label-bold text-primary uppercase tracking-widest mb-6">Final Standings</h2>
+<div class="flex flex-col gap-4">
+<!-- 1st Place (Winner) -->
+<div class="flex items-center gap-4 p-4 rounded-xl bg-primary/10 border-2 border-primary win-glow">
+<div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center font-black text-on-primary text-2xl">1</div>
+<div class="flex-1">
+<div class="font-label-bold text-label-bold text-primary">GOLD COINS</div>
+<div class="text-sm text-on-surface-variant font-bold">SPADES</div>
+</div>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<!-- 2nd Place -->
+<div class="flex items-center gap-4 p-4 rounded-xl bg-surface-container border border-outline-variant">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center font-bold text-on-surface-variant text-xl">2</div>
+<div class="flex-1">
+<div class="font-label-bold text-on-surface">SILVER CUPS</div>
+<div class="text-sm text-on-surface-variant">CLUBS</div>
+</div>
+</div>
+<!-- 3rd Place -->
+<div class="flex items-center gap-4 p-4 rounded-xl bg-surface-container border border-outline-variant">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center font-bold text-on-surface-variant text-xl">3</div>
+<div class="flex-1">
+<div class="font-label-bold text-on-surface">BRONZE SWORDS</div>
+<div class="text-sm text-on-surface-variant">HEARTS</div>
+</div>
+</div>
+<!-- 4th Place -->
+<div class="flex items-center gap-4 p-4 rounded-xl bg-surface-container border border-outline-variant">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center font-bold text-on-surface-variant text-xl">4</div>
+<div class="flex-1">
+<div class="font-label-bold text-on-surface">WOODEN CLUBS</div>
+<div class="text-sm text-on-surface-variant">DIAMONDS</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Race Recap Visual -->
+<div class="glass-panel p-card-padding rounded-xl flex-1 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary text-8xl mb-4" style="font-variation-settings: 'FILL' 1;">sports_score</span>
+<p class="font-label-bold text-label-bold text-on-surface-variant uppercase">Race Duration</p>
+<p class="font-headline-md text-headline-md text-primary">04:42</p>
+<div class="mt-8 flex gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="w-2 h-2 rounded-full bg-outline-variant"></span>
+<span class="w-2 h-2 rounded-full bg-outline-variant"></span>
+</div>
+</div>
+</aside>
+<!-- Right Column: Settlement Panel -->
+<section class="col-span-12 lg:col-span-8 flex flex-col gap-gutter">
+<!-- Win Banner -->
+<div class="glass-panel p-card-padding rounded-xl border-l-8 border-primary relative overflow-hidden">
+<div class="absolute top-0 right-0 p-8 opacity-10">
+<span class="material-symbols-outlined text-[200px]">celebration</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary leading-tight mb-2">RACE FINISHED!<br/>SPADES WINS!</h1>
+<div class="inline-flex items-center gap-3 bg-primary text-on-primary px-6 py-2 rounded-full animate-pulse-gold">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+<span class="font-label-bold text-label-bold uppercase">YOU WON! DISTRIBUTE 4 DRINKS</span>
+</div>
+</div>
+<!-- Distribution Interface -->
+<div class="glass-panel p-card-padding rounded-xl flex-1 flex flex-col">
+<div class="flex justify-between items-end mb-8">
+<div>
+<h3 class="font-label-bold text-label-bold text-on-surface mb-1">ASSIGN YOUR REWARDS</h3>
+<p class="text-on-surface-variant">Select players to distribute your winning sips.</p>
+</div>
+<div class="text-right">
+<div class="font-display-xl text-display-xl text-primary leading-none" id="drinks-counter">4</div>
+<p class="font-label-bold text-label-bold text-primary uppercase">Drinks Left to Give</p>
+</div>
+</div>
+<!-- Player List -->
+<div class="flex flex-col gap-4 mb-8">
+<!-- Player Row: You (Self) -->
+<div class="player-row flex items-center gap-4 p-6 rounded-xl bg-surface-container-high border-2 border-primary/30">
+<div class="w-16 h-16 rounded-full border-4 border-primary p-1">
+<img class="w-full h-full object-cover rounded-full" data-alt="A profile avatar of the main user, depicted as a stylish, modern character in a high-contrast digital art style. Warm amber lighting frames the face against a dark, tech-inspired background, maintaining the premium sportsbook aesthetic of Derby &amp; Drafts." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbNy0XpNnPd0G4OhGW6sDRsGzp6lIahxJlwlVqSfLZPlyFha6V_HEnXGpOZC71-z41kAbhKlrc_OD2HEroP-BC4K4LZLFYKVx1G2C9aJMSeNvvkFh-F7MabaXSxqqOBYGpDNG78xxzzqeU85CgzypMr4t7d_l6KFTCyVKS4zZ0SWLum68nOy1o6nuJLvYUOjCKU_kELjjhk93zLPW7P9za2KsJrRdPuQ-ElL08YBU00rBDgySuIMO5igXSFVQbEjLg_TlZ3Mk7l6M"/>
+</div>
+<div class="flex-1">
+<div class="font-headline-md text-2xl text-on-surface">You</div>
+<div class="text-primary font-bold uppercase text-sm tracking-widest">Champion</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="w-14 h-14 rounded-xl border-2 border-outline-variant flex items-center justify-center hover:bg-surface-variant transition-colors disabled:opacity-30" disabled="" onclick="changeDrinks('self', -1)">
+<span class="material-symbols-outlined text-3xl">remove</span>
+</button>
+<span class="font-display-xl text-4xl w-12 text-center" id="drinks-self">0</span>
+<button class="w-14 h-14 rounded-xl border-2 border-primary flex items-center justify-center hover:bg-primary/20 transition-colors" onclick="changeDrinks('self', 1)">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+</div>
+<!-- Player Row: Alex.eth -->
+<div class="player-row flex items-center gap-4 p-6 rounded-xl bg-surface-container-low border border-outline-variant">
+<div class="w-16 h-16 rounded-full border-4 border-outline-variant p-1">
+<img class="w-full h-full object-cover rounded-full" data-alt="Close up avatar of a competitor named Alex, looking slightly mischievous and competitive. The style is neon-lit digital art with high contrast, using electric blues and sharp shadows, fitting for a late-night drinking game environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJQLbrQmWrq2N544JQj7xUlZSK9EGcQVR-j26TMU6THe2-jAgfvD8LSNKlOfrppk1hMikJAGhlOqTPVXFWRI6R7jJoKTOeggTeE6crKdOrAYITFxSk3cXbs7UqMGB3Kgox4mVSPWXp8E7muwCMl_JbWGSJuwoYoEY88FQg0059YlmqnAYYi1f6_AEU8bydUpT-C45kL_BysVYo8YnlQlMaxVzhykDdx0n7j0S1rCvCfCWLScG5mXy3CQrNjPXbPYxzfwcKgVZ4BlI"/>
+</div>
+<div class="flex-1">
+<div class="font-headline-md text-2xl text-on-surface">Alex.eth</div>
+<div class="text-on-surface-variant font-bold uppercase text-sm tracking-widest">Bettor</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="w-14 h-14 rounded-xl border-2 border-outline-variant flex items-center justify-center hover:bg-surface-variant transition-colors disabled:opacity-30" disabled="" onclick="changeDrinks('alex', -1)">
+<span class="material-symbols-outlined text-3xl">remove</span>
+</button>
+<span class="font-display-xl text-4xl w-12 text-center" id="drinks-alex">0</span>
+<button class="w-14 h-14 rounded-xl border-2 border-primary flex items-center justify-center hover:bg-primary/20 transition-colors" onclick="changeDrinks('alex', 1)">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+</div>
+<!-- Player Row: PartySarah -->
+<div class="player-row flex items-center gap-4 p-6 rounded-xl bg-surface-container-low border border-outline-variant">
+<div class="w-16 h-16 rounded-full border-4 border-outline-variant p-1">
+<img class="w-full h-full object-cover rounded-full" data-alt="A portrait of a cheerful female player, PartySarah, with vibrant energy. The lighting is high-key with soft pink and gold tones, reflecting a lively house party atmosphere while maintaining the sleek, glassmorphic UI design language." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQh2h75Cy5yPu92_k-NWA8QoCTFrp28l54lxGJQ8c-aRHtZ4ntvQvBJdpxJ2BburcRGUv4oizsk2kd4q8XQDEKyoUObzZSaYfpsjMISnlNeXgVJ3WxqFJInJIhTuz_lGMM5YgK5IBoYQYsNkQHe95oAaB6iimoTnSewq2oFcNK0rcqco10TfxtiafGlfr3Wh3Me8uAO5Zq7QK9o_BKqm4gmjdGLhkb_leRPbvQkdWZAUNtbbXGH3xDAjdV3VGPy-4tByR6DyUf-Jo"/>
+</div>
+<div class="flex-1">
+<div class="font-headline-md text-2xl text-on-surface">PartySarah</div>
+<div class="text-on-surface-variant font-bold uppercase text-sm tracking-widest">Bettor</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="w-14 h-14 rounded-xl border-2 border-outline-variant flex items-center justify-center hover:bg-surface-variant transition-colors disabled:opacity-30" disabled="" onclick="changeDrinks('sarah', -1)">
+<span class="material-symbols-outlined text-3xl">remove</span>
+</button>
+<span class="font-display-xl text-4xl w-12 text-center" id="drinks-sarah">0</span>
+<button class="w-14 h-14 rounded-xl border-2 border-primary flex items-center justify-center hover:bg-primary/20 transition-colors" onclick="changeDrinks('sarah', 1)">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+</div>
+<!-- Player Row: BetMaster99 -->
+<div class="player-row flex items-center gap-4 p-6 rounded-xl bg-surface-container-low border border-outline-variant">
+<div class="w-16 h-16 rounded-full border-4 border-outline-variant p-1">
+<img class="w-full h-full object-cover rounded-full" data-alt="A stoic, experienced male player avatar, BetMaster99, in a sharp profile view. Deep crimson and charcoal color palette, high-contrast digital illustration style, capturing the intense, high-stakes vibe of a premium casino game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJ2faqM1SrTmRt-_qfmUIY6vqKTj32DKseS6YrvOnckXqS6GCYCpNfG1jbw1jYVvY8FUCrSMsItnDwOQn8MHvmfnfFjCqt0bY2fP_9OoJe8JwPkoSERbiSwhwCtyHEQqSklH9NUAtobQrOEdAaGP9OVVpsTsNjUqyHEZ-psegpj3DLbAdcV-DwUqjxoG8yPVvgenULHV3QK4mPUoISPg8GimQoLmbtSUw_BUqmqZbafaA9EqlPxWFlXjPCDjGMHmoPxTV7rne9hUI"/>
+</div>
+<div class="flex-1">
+<div class="font-headline-md text-2xl text-on-surface">BetMaster99</div>
+<div class="text-on-surface-variant font-bold uppercase text-sm tracking-widest">Bettor</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="w-14 h-14 rounded-xl border-2 border-outline-variant flex items-center justify-center hover:bg-surface-variant transition-colors disabled:opacity-30" disabled="" onclick="changeDrinks('betmaster', -1)">
+<span class="material-symbols-outlined text-3xl">remove</span>
+</button>
+<span class="font-display-xl text-4xl w-12 text-center" id="drinks-betmaster">0</span>
+<button class="w-14 h-14 rounded-xl border-2 border-primary flex items-center justify-center hover:bg-primary/20 transition-colors" onclick="changeDrinks('betmaster', 1)">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<div class="mt-auto pt-6 border-t border-outline-variant">
+<button class="w-full h-24 bg-surface-variant text-outline font-headline-md text-headline-md rounded-xl transition-all duration-300 flex items-center justify-center gap-4 opacity-50 cursor-not-allowed" disabled="" id="done-btn">
+<span id="btn-text">DISTRIBUTE ALL DRINKS</span>
+<span class="material-symbols-outlined text-4xl">local_bar</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-4 bg-surface-container-lowest/80 dark:bg-surface-container-lowest/80 backdrop-blur-2xl border-t-4 border-secondary-container dark:border-secondary-container shadow-[0_-10px_30px_rgba(0,0,0,0.5)] rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-outline p-2 opacity-70 hover:text-secondary transition-all" href="#">
+<span class="material-symbols-outlined">sports_score</span>
+<span class="font-label-bold text-label-bold">Race</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline p-2 opacity-70 hover:text-secondary transition-all" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-bold text-label-bold">Players</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-6 py-2 scale-110 active:scale-110 duration-200 ease-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="font-label-bold text-label-bold">Bets</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline p-2 opacity-70 hover:text-secondary transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-bold text-label-bold">Settings</span>
+</a>
+</nav>
+<script>
+        let drinksLeft = 4;
+        const playerDrinks = {
+            self: 0,
+            alex: 0,
+            sarah: 0,
+            betmaster: 0
+        };
+
+        function changeDrinks(playerId, delta) {
+            if (delta > 0 && drinksLeft > 0) {
+                playerDrinks[playerId]++;
+                drinksLeft--;
+            } else if (delta < 0 && playerDrinks[playerId] > 0) {
+                playerDrinks[playerId]--;
+                drinksLeft++;
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            // Update counter
+            document.getElementById('drinks-counter').textContent = drinksLeft;
+            
+            // Update player labels and buttons
+            for (const id in playerDrinks) {
+                document.getElementById(`drinks-${id}`).textContent = playerDrinks[id];
+                
+                const row = document.getElementById(`drinks-${id}`).closest('.player-row');
+                const minusBtn = row.querySelector('button:first-of-type');
+                const plusBtn = row.querySelector('button:last-of-type');
+
+                minusBtn.disabled = playerDrinks[id] === 0;
+                plusBtn.disabled = drinksLeft === 0;
+            }
+
+            // Update Finalize Button
+            const doneBtn = document.getElementById('done-btn');
+            const btnText = document.getElementById('btn-text');
+            
+            if (drinksLeft === 0) {
+                doneBtn.disabled = false;
+                doneBtn.classList.remove('bg-surface-variant', 'text-outline', 'opacity-50', 'cursor-not-allowed');
+                doneBtn.classList.add('bg-primary', 'text-on-primary', 'shadow-[0_0_40px_rgba(255,193,116,0.4)]', 'scale-105');
+                btnText.textContent = "DONE DISTRIBUTING";
+            } else {
+                doneBtn.disabled = true;
+                doneBtn.classList.add('bg-surface-variant', 'text-outline', 'opacity-50', 'cursor-not-allowed');
+                doneBtn.classList.remove('bg-primary', 'text-on-primary', 'shadow-[0_0_40px_rgba(255,193,116,0.4)]', 'scale-105');
+                btnText.textContent = "DISTRIBUTE ALL DRINKS";
+            }
+        }
+    </script>
+</body></html>

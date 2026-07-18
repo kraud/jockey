@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Derby &amp; Drafts - Lobby</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;family=Space+Grotesk:wght@500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Space+Grotesk:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        .neon-border {
+            box-shadow: 0 0 15px rgba(170, 2, 102, 0.5);
+            border: 2px solid #aa0266;
+        }
+        .neon-text-glow {
+            text-shadow: 0 0 10px rgba(255, 193, 116, 0.5);
+        }
+        @keyframes pulse-neon {
+            0%, 100% { opacity: 1; filter: drop-shadow(0 0 10px #aa0266); }
+            50% { opacity: 0.8; filter: drop-shadow(0 0 20px #ffb0cd); }
+        }
+        .animate-pulse-neon {
+            animation: pulse-neon 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#aa0266",
+                        "surface-bright": "#31394d",
+                        "secondary-fixed-dim": "#ffb0cd",
+                        "tertiary-fixed-dim": "#4cd7f6",
+                        "on-tertiary-fixed-variant": "#004e5c",
+                        "surface-container-low": "#131b2e",
+                        "on-primary": "#472a00",
+                        "on-surface": "#dae2fd",
+                        "on-surface-variant": "#d8c3ad",
+                        "background": "#0b1326",
+                        "surface-container-high": "#222a3d",
+                        "secondary": "#ffb0cd",
+                        "primary-fixed-dim": "#ffb95f",
+                        "inverse-on-surface": "#283044",
+                        "surface-container-highest": "#2d3449",
+                        "error-container": "#93000a",
+                        "error": "#ffb4ab",
+                        "surface-container-lowest": "#060e20",
+                        "on-primary-fixed-variant": "#653e00",
+                        "secondary-fixed": "#ffd9e4",
+                        "on-secondary-fixed-variant": "#8c0053",
+                        "on-secondary": "#640039",
+                        "primary": "#ffc174",
+                        "on-tertiary-fixed": "#001f26",
+                        "on-error": "#690005",
+                        "outline-variant": "#534434",
+                        "tertiary-container": "#29c1df",
+                        "primary-fixed": "#ffddb8",
+                        "tertiary-fixed": "#acedff",
+                        "surface-variant": "#2d3449",
+                        "primary-container": "#f59e0b",
+                        "surface": "#0b1326",
+                        "surface-dim": "#0b1326",
+                        "on-secondary-fixed": "#3e0022",
+                        "surface-tint": "#ffb95f",
+                        "on-primary-container": "#613b00",
+                        "on-tertiary": "#003640",
+                        "on-tertiary-container": "#004b58",
+                        "on-error-container": "#ffdad6",
+                        "inverse-surface": "#dae2fd",
+                        "on-background": "#dae2fd",
+                        "inverse-primary": "#855300",
+                        "outline": "#a08e7a",
+                        "surface-container": "#171f33",
+                        "on-secondary-container": "#ffbad3",
+                        "tertiary": "#54ddfc",
+                        "on-primary-fixed": "#2a1700"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "32px",
+                        "container-margin": "64px",
+                        "card-padding": "40px",
+                        "stack-gap-lg": "48px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "label-bold": ["Space Grotesk"],
+                        "headline-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "display-xl": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["48px", { "lineHeight": "56px", "fontWeight": "800" }],
+                        "label-bold": ["18px", { "lineHeight": "24px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-lg": ["64px", { "lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "900" }],
+                        "headline-lg-mobile": ["40px", { "lineHeight": "44px", "fontWeight": "900" }],
+                        "display-xl": ["120px", { "lineHeight": "110px", "letterSpacing": "-0.04em", "fontWeight": "900" }],
+                        "body-lg": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-lg overflow-hidden h-screen flex flex-col">
+<!-- Top Navigation Bar (Shared Component Execution) -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-gutter h-20 md:h-24 max-w-[1920px] mx-auto bg-surface/70 dark:bg-surface/70 backdrop-blur-xl border-b-2 border-outline-variant dark:border-outline-variant">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md-mobile md:text-headline-md font-black text-primary dark:text-primary tracking-tighter">Derby &amp; Drafts</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<nav class="flex gap-6">
+<span class="font-label-bold text-label-bold text-primary font-bold">Lobby</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant hover:bg-surface-container-highest transition-colors px-4 py-2 rounded-xl cursor-pointer">Rules</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant hover:bg-surface-container-highest transition-colors px-4 py-2 rounded-xl cursor-pointer">Stats</span>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary p-2 hover:bg-surface-container-highest rounded-full transition-colors">group</button>
+<button class="material-symbols-outlined text-primary p-2 hover:bg-surface-container-highest rounded-full transition-colors">timer</button>
+<div class="w-12 h-12 rounded-full border-2 border-primary overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A stylized portrait of a high-stakes horse racing enthusiast, wearing vintage aviator goggles and a silk racing jersey. The lighting is dramatic and moody, reflecting a high-contrast sportsbook aesthetic with neon pink and deep blue accents. Professional digital painting style with sharp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTsw_m_hNR8lMN40jzJcHMzjAHLOqnTQLXhM9uwjVfBTfPj2hx-PdPcumzQyEgGi9Ss0tCMeJbpml95vpMZ_L4nwuI_bVHnN80ukrkgtkthMHx1giq0v25pqZICcvu9mbqT2XjIFUc0ng2kub5rnCFcZf7oaeEcnsjyrihpXcZ63forO9mnBYvx3D5I_7C9PSttaquDFg7OyKsPfatc3dn9nO2FN2ANWFIZXAqbly1dnYyywt90Z56Els_uA_kp9xFhGk3wOXTjCk"/>
+</div>
+</div>
+</header>
+<!-- Main Content Grid -->
+<main class="flex-grow pt-24 md:pt-32 px-container-margin pb-12 grid grid-cols-12 gap-gutter relative">
+<!-- Animated Background Shader Element -->
+
+<!-- Sidebar: Host Controls -->
+<aside class="col-span-3 flex flex-col gap-8">
+<div class="glass-panel p-card-padding rounded-xl flex flex-col gap-stack-gap-lg">
+<h2 class="font-headline-md text-headline-md text-primary tracking-tight">Host Controls</h2>
+<!-- Track Length Slider -->
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center">
+<label class="font-label-bold text-label-bold text-on-surface-variant">Track Length</label>
+<span class="text-primary font-bold text-2xl" id="track-val">6</span>
+</div>
+<div class="relative h-4 bg-surface-container-low rounded-full inner-shadow">
+<input class="absolute w-full h-full opacity-0 cursor-pointer z-10" max="12" min="3" oninput="document.getElementById('track-val').innerText = this.value" type="range" value="6"/>
+<div class="h-full bg-primary rounded-full transition-all" style="width: 50%;"></div>
+</div>
+<div class="flex justify-between text-sm opacity-50 font-label-bold">
+<span>Sprint</span>
+<span>Marathon</span>
+</div>
+</div>
+<!-- Lock Room Toggle -->
+<div class="flex items-center justify-between p-4 bg-surface-container-high rounded-xl border border-outline-variant">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">lock</span>
+<span class="font-label-bold text-label-bold">Lock Room</span>
+</div>
+<button class="w-16 h-8 bg-surface-container-highest rounded-full transition-all p-1 flex items-center" id="lock-toggle" onclick="this.classList.toggle('bg-secondary'); this.classList.toggle('bg-surface-container-highest')">
+<div class="w-6 h-6 bg-white rounded-full transition-all transform translate-x-0" id="lock-dot"></div>
+</button>
+</div>
+<!-- Massive Action Button -->
+<button class="mt-auto h-24 bg-secondary-container text-on-secondary-container rounded-xl flex items-center justify-center gap-4 hover:scale-95 transition-transform active:scale-90 neon-border animate-pulse-neon">
+<span class="font-headline-md text-headline-md uppercase">Start Race</span>
+<span class="material-symbols-outlined scale-150">play_arrow</span>
+</button>
+</div>
+</aside>
+<!-- Center Area: Room Identity -->
+<section class="col-span-6 flex flex-col items-center justify-center gap-stack-gap-lg">
+<div class="text-center">
+<p class="font-label-bold text-label-bold text-secondary uppercase tracking-widest mb-4">Join Code</p>
+<h1 class="font-display-xl text-display-xl text-primary neon-text-glow leading-none select-all cursor-pointer hover:scale-105 transition-transform">WHEEL</h1>
+</div>
+<!-- QR Code Container -->
+<div class="glass-panel p-8 rounded-3xl neon-border bg-white group cursor-pointer transition-all hover:scale-105">
+<div class="w-64 h-64 bg-white flex items-center justify-center relative">
+<!-- Representing a Large QR Code -->
+<div class="grid grid-cols-8 grid-rows-8 w-full h-full gap-1 p-2 bg-white">
+<!-- Simulated QR Pattern -->
+<div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div>
+<div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div>
+<div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
+<div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
+<div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
+<div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
+<div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div>
+<div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div>
+</div>
+<div class="absolute inset-0 bg-primary/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-background">qr_code_scanner</span>
+</div>
+</div>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md text-center">
+                Scan to join or visit <span class="text-primary underline">derbydrafts.game</span>
+</p>
+</section>
+<!-- Right Side: Players List -->
+<section class="col-span-3 flex flex-col gap-6 h-full overflow-hidden">
+<div class="flex justify-between items-end mb-2">
+<h3 class="font-headline-md text-headline-md-mobile text-secondary">Players</h3>
+<span class="font-label-bold text-label-bold text-on-surface-variant">6 / 12</span>
+</div>
+<div class="flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
+<!-- Player Chips -->
+<div class="flex items-center gap-4 p-4 glass-panel rounded-full border-l-8 border-primary group hover:bg-primary/20 transition-colors cursor-default">
+<div class="w-14 h-14 rounded-full border-4 border-primary p-1 bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover rounded-full" data-alt="Close up of a stylized digital avatar wearing neon-trimmed sunglasses and a vibrant polo shirt. High contrast cinematic lighting with purple and gold highlights, artistic 3D character design, high detail." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmF_r5HAZ-SBRJCHabsIa-ndQ7EjDrDCwVmFOoApLprxX3zJ6Znqy57OlOU5J1lUf-3VMqvl5N1uwQScKakFp45iodWMVFInZ_g6tbQI79ps71WQ17cfYNR8y123XcUbm0IyX5c5oea0JxQAQlQM24jOWW2CC9QMusy25LwYTQohvhkIdxPnrQ9ZPvZ2Mnxr7xkMTlSi-q16HIIHDWQnrw86lXFnRklLF5uonYWp-Ujkyv6b3BMBs3inHWznt1xfDcMT4BQ_KRrGI"/>
+</div>
+<div class="flex-grow">
+<p class="font-label-bold text-label-bold text-on-surface">JackpotJerry</p>
+<p class="text-xs text-on-surface-variant uppercase tracking-tighter">Host</p>
+</div>
+<span class="material-symbols-outlined text-primary group-hover:scale-125 transition-transform">stars</span>
+</div>
+<div class="flex items-center gap-4 p-4 glass-panel rounded-full border-l-8 border-secondary group hover:bg-secondary/20 transition-colors">
+<div class="w-14 h-14 rounded-full border-4 border-secondary p-1 bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover rounded-full" data-alt="Vibrant digital portrait of a gamer with dyed pink hair and glowing headphones. The background is a blurred neon-lit sports bar. High-contrast bold illustration style, sharp focus, electric energy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1OG06ZKKUdx17OIQhqCbatj1lTXf-orpP2QqpcqV_r7lL1CJ6CuogKiS_0b89TErvyJh7aRa3jMs3UknkBlwYF5VwSXmB_1uwyGU-SiGKJGLpSzWs2ZmdAgNzZu7sRsjF3l7GH5sTxXwY0QSd-MiVbL8HeQCZGaDgWwovVxuQ0WIYYA1SZU5xet3E6P6rhJBsnkjEG0OxG9AS5xNuHYp6-3S1DA6HIckCe7CdPiomud4cPbxp-mgK_LgUhRkRVbi72bivwXK4tvY"/>
+</div>
+<div class="flex-grow">
+<p class="font-label-bold text-label-bold text-on-surface">BlinkerBeth</p>
+<p class="text-xs text-on-surface-variant uppercase tracking-tighter">Ready</p>
+</div>
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover:opacity-100 transition-opacity">check_circle</span>
+</div>
+<div class="flex items-center gap-4 p-4 glass-panel rounded-full border-l-8 border-tertiary group hover:bg-tertiary/20 transition-colors">
+<div class="w-14 h-14 rounded-full border-4 border-tertiary p-1 bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover rounded-full" data-alt="Artistic 3D character of a young man wearing a high-tech baseball cap and reflective glasses. Neon blue and cyan lighting on a dark background. Bold colors, sportsbook aesthetic, premium digital art." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkO5XvfOlhAhD0qlmGNQc1IUg5czcMLkSX52eq_YL7ap-O4GBP9LKzGOx07Bc2HUyI6kX3sUknKcTW1keHIDJven0ZYTdOYrrakxgHtJBMvZuqDocyI0RffDuBHdPhzU9D_6EhFW0TXVWfQr9C2bolLv27okccqKMENWaX6cpMXTpdIF78_Uqzy1RmVEw7GKseEH86RbMBtZdhDDlg-7f4MVYRKvDvGq5yw0CdpLi3XxfRXV8WOUDK25znhYruD7apYsUv0faf1nk"/>
+</div>
+<div class="flex-grow">
+<p class="font-label-bold text-label-bold text-on-surface">AceTracer</p>
+<p class="text-xs text-on-surface-variant uppercase tracking-tighter">Choosing Suit...</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 glass-panel rounded-full border-l-8 border-outline group hover:bg-surface-container-highest transition-colors">
+<div class="w-14 h-14 rounded-full border-4 border-outline p-1 bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="flex-grow">
+<p class="font-label-bold text-label-bold text-on-surface">DerbyDave</p>
+<p class="text-xs text-on-surface-variant uppercase tracking-tighter">Ready</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 glass-panel rounded-full border-l-8 border-error-container group hover:bg-error-container/20 transition-colors">
+<div class="w-14 h-14 rounded-full border-4 border-error-container p-1 bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover rounded-full" data-alt="A stylized portrait of a competitive player with a intense expression, highlighted by red and dark blue ambient light. The style is modern comic book art with thick lines and vibrant saturated colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCRIQEWVhapx2LPNVIA7AvURtvlQ1rh4tDDZ0zvh1xXJ_Vv8dH33rPCpjKgPF8EIImOVqgRMiOJZS0Gt6f1jldKbBmTaKqtkE-IBxYlMpfaoT5zYCkzmTt9-buo-FzKPPLyjhiIT-cX9RQjStlQ_fGxRxlTyq1DovtblLOQKWwFblWyDBOYZ4LMKoOIYZNTtyE62lHBlNAZY4s0w7lvMmTOw7ZajcCuMKom8F3o3KbCl5Wc4ldoYzhYWu9ykUlFSqnRdQ3QjZzbFg"/>
+</div>
+<div class="flex-grow">
+<p class="font-label-bold text-label-bold text-on-surface">ShotShuffler</p>
+<p class="text-xs text-on-surface-variant uppercase tracking-tighter">Ready</p>
+</div>
+</div>
+<!-- Empty Slot -->
+<div class="flex items-center gap-4 p-4 border-2 border-dashed border-outline-variant rounded-full opacity-40 hover:opacity-100 transition-opacity cursor-pointer">
+<div class="w-14 h-14 rounded-full border-2 border-dashed border-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined">add</span>
+</div>
+<span class="font-label-bold text-label-bold">Invite More</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Mobile only fallback - Hidden by Design System instructions but mapped as per JSON logic) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-4 bg-surface-container-lowest/80 dark:bg-surface-container-lowest/80 backdrop-blur-2xl border-t-4 border-secondary-container dark:border-secondary-container shadow-[0_-10px_30px_rgba(0,0,0,0.5)] rounded-t-xl">
+<div class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-6 py-2 scale-110">
+<span class="material-symbols-outlined">sports_score</span>
+<span class="font-label-bold text-xs">Race</span>
+</div>
+<div class="flex flex-col items-center justify-center text-outline p-2 opacity-70">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-bold text-xs">Players</span>
+</div>
+<div class="flex flex-col items-center justify-center text-outline p-2 opacity-70">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-bold text-xs">Bets</span>
+</div>
+<div class="flex flex-col items-center justify-center text-outline p-2 opacity-70">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-bold text-xs">Settings</span>
+</div>
+</nav>
+<script>
+        // Micro-interactions for the lobby
+        const lockToggle = document.getElementById('lock-toggle');
+        const lockDot = document.getElementById('lock-dot');
+        
+        lockToggle.addEventListener('click', () => {
+            const isLocked = lockToggle.classList.contains('bg-secondary');
+            lockDot.style.transform = isLocked ? 'translateX(32px)' : 'translateX(0)';
+            
+            // Visual feedback
+            if(isLocked) {
+                console.log("Lobby Locked");
+            } else {
+                console.log("Lobby Open");
+            }
+        });
+
+        // Pulsing join code animation logic
+        const joinCode = document.querySelector('h1');
+        setInterval(() => {
+            joinCode.classList.toggle('scale-105');
+        }, 3000);
+    </script>
+</body></html>
