@@ -16,10 +16,13 @@ export interface Player {
   id: string;
   name: string;
   type: PlayerType;
+  /** Suit selected during bidding (undefined before bid is placed). */
+  suit?: Suit;
+  /** Bid amount selected during bidding. */
+  bidAmount?: number;
   isConnected: boolean;
   drinks: {
     give: number;    // drinks to give away this round
-    take: number;    // penalty drinks auto-added
     consume: number; // drinks to consume this round
     isReady: boolean;
     gaveAll: boolean; // player marked distribution as done
@@ -79,7 +82,7 @@ export type RaceLogEvent =
   | { type: "TRACK_FLIP"; index: number; suit: Suit; ignored: boolean }
   | { type: "HORSE_FINISH"; suit: Suit; placement: number }
   | { type: "RACE_END"; placements: ReadonlyArray<{ suit: Suit; placement: number }> }
-  | { type: "SETTLEMENT"; playerId: string; drinksGive: number; drinksTake: number }
+  | { type: "SETTLEMENT"; playerId: string; drinksGive: number; drinksConsume: number }
   | { type: "DRINK_GIVE"; from: string; to: string; amount: number }
   | { type: "DRINK_CLEAR"; from: string; to: string; amount: number }
   | { type: "DRINK_AUTO"; to: string; amount: number }
@@ -114,7 +117,7 @@ export interface Room {
 export interface SettlementResult {
   playerId: string;
   drinksGive: number;
-  drinksTake: number;
+  drinksConsume: number;
 }
 
 // ── Constants ────────────────────────────────────────────────────────
@@ -174,7 +177,7 @@ export type ServerMessage =
   | { type: "bids_updated"; bids: Bid[] }
   | { type: "race_log"; events: RaceLogEvent[] }
   | { type: "race_ended"; placements: ReadonlyArray<{ suit: Suit; placement: number }>; settlement: SettlementResult[] }
-  | { type: "drinks_updated"; drinks: Array<{ playerId: string; give: number; take: number; consume: number; gaveAll: boolean }> }
+  | { type: "drinks_updated"; drinks: Array<{ playerId: string; give: number; consume: number; gaveAll: boolean }> }
   | { type: "player_ready"; playerId: string; ready: boolean }
   | { type: "game_ended" }
   | { type: "error"; code: string; message: string }

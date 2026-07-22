@@ -1,66 +1,133 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #1a1a2e; color: #e0e0e0;
-  min-height: 100vh; display: flex; flex-direction: column; align-items: center;
-  padding: 1rem;
-}
-h1 { font-size: 1.5rem; margin-bottom: 0.5rem; color: #e94560; }
-h2 { font-size: 1.1rem; margin: 0.5rem 0; }
-.container { max-width: 600px; width: 100%; }
-.card {
-  background: #16213e; border-radius: 8px; padding: 1rem; margin: 0.5rem 0;
-  border: 1px solid #0f3460;
-}
-button {
-  background: #e94560; color: white; border: none; border-radius: 4px;
-  padding: 0.5rem 1rem; cursor: pointer; font-size: 0.9rem; margin: 0.25rem;
-}
-button:hover { background: #c73650; }
-button:disabled { background: #555; cursor: not-allowed; }
-button.selected { background: #0f3460; border: 2px solid #e94560; }
-input, select {
-  background: #0f3460; color: #e0e0e0; border: 1px solid #533483;
-  border-radius: 4px; padding: 0.5rem; font-size: 0.9rem; margin: 0.25rem;
-}
-.error-banner {
-  background: #e94560; color: white; padding: 0.5rem; border-radius: 4px;
-  margin: 0.5rem 0; display: none;
-}
-.error-banner.visible { display: block; }
-.player-list { list-style: none; }
-.player-list li { padding: 0.5rem 0; display: flex; flex-direction: column; gap: 0.25rem; border-bottom: 1px solid #0f3460; }
-.horse-grid {
-  display: grid; gap: 1px; background: #0f3460;
-  border: 1px solid #0f3460; border-radius: 4px;
-  margin: 0.5rem 0; overflow-x: auto;
-}
-.horse-cell {
-  background: #111; padding: 2px 4px; text-align: center;
-  min-width: 24px; font-size: 0.8rem; display: flex;
-  align-items: center; justify-content: center; min-height: 28px;
-}
-.horse-cell.flipped { background: #222; }
-.horse-header { background: #1a1a2e; font-weight: bold; }
-.horse-knight { font-size: 1.4rem; line-height: 1; }
-.track-card-flipped { font-size: 1rem; opacity: 0.7; }
-.race-log {
-  max-height: 200px; overflow-y: auto; font-size: 0.8rem;
-  font-family: monospace; background: #111; padding: 0.5rem;
-  border-radius: 4px; margin: 0.5rem 0;
-}
-.suit-btns { display: flex; gap: 0.25rem; flex-wrap: wrap; }
-.amount-btns { display: flex; gap: 0.25rem; flex-wrap: wrap; margin: 0.5rem 0; }
-.phase-badge {
-  display: inline-block; background: #533483; color: white;
-  padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;
-}
-.race-turn { border-top: 1px solid #0f3460; margin-top: 0.5rem; padding-top: 0.25rem; }
-.race-turn.first { border-top: none; margin-top: 0; }
-.primary-action button { font-size: 1.1rem; padding: 0.75rem 1.5rem; }
+/* ── global.css — Tailwind directives + base resets for Derby & Drafts ── */
+/* Depends on: design-tokens.css (loaded before via main.tsx import order). */
+/* Used by: main.tsx (entry). */
 
-@keyframes race-turn-slide-in {
-  0%   { transform: translateY(-18px); opacity: 0; }
-  100% { transform: translateY(0);     opacity: 1; }
+@import "tailwindcss";
+
+/* ── Base Resets ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-.race-turn--enter { animation: race-turn-slide-in 220ms ease-out; }
+
+html {
+  /* Tailwind v4 sets font-size: 16px on html — we keep that. */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-display);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  min-height: 100vh;
+  /* Prevent horizontal overflow from oversized elements */
+  overflow-x: hidden;
+}
+
+/* ── Utility Layers ── */
+/* Neon text glow — reusable for gold/pink headline emphasis */
+@utility text-glow-gold {
+  text-shadow: 0 0 20px rgba(255, 193, 116, 0.5), 0 0 40px rgba(255, 193, 116, 0.25);
+}
+
+@utility text-glow-pink {
+  text-shadow: 0 0 20px rgba(255, 176, 205, 0.6), 0 0 40px rgba(255, 176, 205, 0.3);
+}
+
+@utility text-glow-teal {
+  text-shadow: 0 0 20px rgba(84, 221, 252, 0.5), 0 0 40px rgba(84, 221, 252, 0.25);
+}
+
+/* Neon border glow for active elements */
+@utility border-glow-active {
+  box-shadow: 0 0 15px rgba(255, 193, 116, 0.6), inset 0 0 8px rgba(255, 193, 116, 0.1);
+}
+
+/* Type scale utilities */
+@utility text-display-xl {
+  font-family: var(--font-display);
+  font-size: var(--text-display-xl-size);
+  font-weight: var(--text-display-xl-weight);
+  line-height: var(--text-display-xl-line);
+  letter-spacing: var(--text-display-xl-tracking);
+  text-transform: uppercase;
+}
+
+@utility text-headline-lg {
+  font-family: var(--font-display);
+  font-size: var(--text-headline-lg-size);
+  font-weight: var(--text-headline-lg-weight);
+  line-height: var(--text-headline-lg-line);
+  letter-spacing: var(--text-headline-lg-tracking);
+  text-transform: uppercase;
+}
+
+@utility text-headline-md {
+  font-family: var(--font-display);
+  font-size: var(--text-headline-md-size);
+  font-weight: var(--text-headline-md-weight);
+  line-height: var(--text-headline-md-line);
+}
+
+@utility text-body-lg {
+  font-family: var(--font-display);
+  font-size: var(--text-body-lg-size);
+  font-weight: var(--text-body-lg-weight);
+  line-height: var(--text-body-lg-line);
+}
+
+@utility text-label-bold {
+  font-family: var(--font-label);
+  font-size: var(--text-label-bold-size);
+  font-weight: var(--text-label-bold-weight);
+  line-height: var(--text-label-bold-line);
+  letter-spacing: var(--text-label-bold-tracking);
+}
+
+/* Glass surface utility */
+@utility glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 2px solid var(--glass-border);
+  border-radius: var(--radius-card);
+}
+
+/* Squishy arcade button base */
+@utility btn-squishy {
+  border-radius: var(--radius-component);
+  border-bottom: var(--btn-bottom-border) solid rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s ease, border-bottom-width 0.1s ease;
+  cursor: pointer;
+  font-family: var(--font-label);
+  text-transform: uppercase;
+  letter-spacing: var(--text-label-bold-tracking);
+}
+
+/* Active state for squishy button — defined as regular CSS since @utility can't have pseudo-classes */
+.btn-squishy:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+/* Animations */
+@keyframes pulse-neon {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 176, 205, 0.4); }
+  50% { box-shadow: 0 0 24px rgba(255, 176, 205, 0.8); }
+}
+
+@utility animate-pulse-neon {
+  animation: pulse-neon 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 193, 116, 0.4); }
+  50% { box-shadow: 0 0 24px rgba(255, 193, 116, 0.8); }
+}
+
+@utility animate-pulse-gold {
+  animation: pulse-gold 1.5s ease-in-out infinite;
+}

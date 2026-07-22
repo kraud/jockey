@@ -73,7 +73,7 @@ export function hostAddPlayer(
     name: params.name,
     type: params.type,
     isConnected: true,
-    drinks: { give: 0, take: 0, consume: 0, isReady: false, gaveAll: false },
+    drinks: { give: 0, consume: 0, isReady: false, gaveAll: false },
   };
 
   r.players.push(player);
@@ -202,7 +202,7 @@ export function hostStartRace(room: Room): Room {
   r.raceLog = [];
   // Reset drinks for all players
   for (const p of r.players) {
-    p.drinks = { give: 0, take: 0, consume: 0, isReady: false, gaveAll: false };
+    p.drinks = { give: 0, consume: 0, isReady: false, gaveAll: false };
   }
   return r;
 }
@@ -367,14 +367,13 @@ export function settleRound(room: Room): Room {
   for (const result of results) {
     const player = findPlayer(r, result.playerId);
     player.drinks.give += result.drinksGive;
-    player.drinks.take += result.drinksTake;
-    player.drinks.consume += result.drinksTake; // auto-added penalty
+    player.drinks.consume += result.drinksConsume;
 
     r.raceLog.push({
       type: "SETTLEMENT",
       playerId: result.playerId,
       drinksGive: result.drinksGive,
-      drinksTake: result.drinksTake,
+      drinksConsume: result.drinksConsume,
     });
   }
 
@@ -608,7 +607,7 @@ export function finishRound(room: Room): Room {
   r.readyDeadlineMs = null;
 
   for (const p of r.players) {
-    p.drinks = { give: 0, take: 0, consume: 0, isReady: false, gaveAll: false };
+    p.drinks = { give: 0, consume: 0, isReady: false, gaveAll: false };
   }
 
   return r;

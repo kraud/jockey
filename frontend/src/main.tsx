@@ -1,7 +1,9 @@
+import "./styles/design-tokens.css";
+import "./styles/global.css";
 import { render } from "solid-js/web";
 import App from "./App";
-// ── frontend/src/main.tsx — SPA entry point; render(() => <App />, root) into #root. ──
-// Depends on: ./App.
+// ── main.tsx — SPA entry point; renders App into #root. ──
+// Depends on: ./App, ./styles/design-tokens.css, ./styles/global.css.
 // Used by: (HTML host page).
 
 

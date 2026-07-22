@@ -1,7 +1,8 @@
-import { createSignal, onCleanup } from "solid-js";
+import { createSignal, onCleanup, Show } from "solid-js";
 import type { RoomState } from "../ws/store";
-// ── frontend/src/views/CountdownView.tsx — COUNTDOWN phase UI: 3-2-1-GO! ticker derived from room().countdownMs polled at 100 ms. ──
-// Depends on: solid-js.
+import AppShell from "../components/AppShell";
+// ── frontend/src/views/CountdownView.tsx — COUNTDOWN phase UI: 3-2-1-GO! centered gold display. ──
+// Depends on: solid-js, ../components/AppShell.
 // Used by: RoomView.tsx.
 
 
@@ -29,15 +30,18 @@ export default function CountdownView(props: Props) {
   };
 
   return (
-    <>
-      <div class="card">
-        <span class="phase-badge">COUNTDOWN</span>
+    <AppShell title="Get Ready!">
+      <div class="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <Show when={display() === "GO!"} fallback={
+          <div class="text-display-xl text-[var(--color-primary)] text-glow-gold text-[12rem] leading-none">
+            {display()}
+          </div>
+        }>
+          <div class="text-headline-lg text-[var(--color-primary)] animate-pulse-gold">
+            GO!
+          </div>
+        </Show>
       </div>
-      <div class="card" style="text-align:center;">
-        <div style="font-size:6rem;padding:2rem 0;">
-          {display()}
-        </div>
-      </div>
-    </>
+    </AppShell>
   );
 }

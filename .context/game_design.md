@@ -73,12 +73,16 @@ Placements are assigned in strict crossing order: the first horse to advance pas
 For each bidder, the bid placed on the winning horse is resolved against the horse's placement:
 - 1st place → bidder earns 2 × bid "drinks to give"
 - 2nd place → bidder earns 1 × bid "drinks to give"
-- 3rd place → bidder owes 1 × bid "drinks to take" (auto-added to their drinks-to-consume counter)
-- 4th place → bidder owes 2 × bid "drinks to take" (auto-added)
+- 3rd place → bidder owes 1 × bid "drinks to consume" (auto-added to their counter)
+- 4th place → bidder owes 2 × bid "drinks to consume" (auto-added)
 
+
+> **UI cross-reference:** Settlements are displayed in the combined SettlementView.tsx alongside the Distribution controls (see § 8. Distribution Phase).
 ### 8. Distribution Phase
 Every player with `drinks_to_give > 0` has a 30 s global window (single shared timer) to assign their drinks to any player (self or others). Each assignment is a discrete give of any positive integer up to the player's remaining pool. After 30 s, all unassigned drinks are auto-distributed: each unit is rolled uniformly at random over all players (self-included) and added to that player's drinks-to-consume counter. A player with `drinks_to_give == 0` simply waits 30 s; the timer does not pause for them.
 
+
+> **UI cross-reference:** Distribution controls are rendered in the same SettlementView.tsx component as the Settlement results (see § 7. Settlement). The leaderboard from settlement persists as a sidebar during the distribution phase.
 ### 9. Ready Phase
 Once all drinks are settled, every player sees their own `drinks_to_consume` total. Each player presses a "ready" button when they have finished drinking. The next round begins the moment all active players are ready, or after a 60 s hard cap (auto-ready any remaining players). The next round resets all race state (positions, placements, drinks counters) but keeps player identities and any per-player persistent settings the host has set.
 
@@ -140,9 +144,8 @@ Clubs  | Cl |       |   ♞   |       |       |       |       |       |     |
 - **Deck (Draw Pile)** — the shuffled 44-card Spanish deck used to drive race movement (the 48-card Spanish deck minus the four 11s, which represent the jockeys riding the horses).
 - **Discard Pile (Used Pile)** — cards already drawn from the Draw Pile this race. Reshuffled back into the Draw Pile when the Draw Pile is empty.
 - **Distribution Phase** — the post-race phase in which players with `drinks_to_give > 0` assign drinks to other players (or themselves) within a 30 s window.
-- **Drinks to Consume** — the integer counter each player owns; the number of sips they must drink this round. Increased by: (a) auto-assigned "drinks to take" penalties in Settlement, and (b) drinks received from other players in Distribution.
+- **Drinks to Consume** — the integer counter each player owns; the number of sips they must drink this round. Increased by: (a) auto-assigned penalties from 3rd/4th place Settlement, and (b) drinks received from other players during Distribution. Also referred to as "drinks to take" — the two terms are synonymous.
 - **Drinks to Give** — the integer pool a player earned from a winning bid; must be distributed (or auto-distributed) during Distribution.
-- **Drinks to Take** — the integer penalty a player owes from a losing bid; auto-added to their `drinks_to_consume` counter at Settlement.
 - **Finished Horse** — a horse that has advanced past the finish line (step N+1). Cannot be moved by further draws or flips; matching cards are ignored.
 - **Finishing Line** — the imaginary line one step past the last track-card. A horse wins by advancing past it.
 - **Horse** — a runner identified by suit. The four horses are Coins, Cups, Swords, Clubs.
@@ -205,7 +208,6 @@ Clubs  | Cl |       |   ♞   |       |       |       |       |       |     |
 
 ### DrinksState (per Player)
 - `drinksToGive` (int >= 0)
-- `drinksToTake` (int >= 0)
 - `drinksToConsume` (int >= 0)
 - `isReady` (bool)
 
@@ -216,7 +218,7 @@ Append-only list of typed events:
 - `TRACK_FLIP { index, suit, ignored }`
 - `HORSE_FINISH { suit, placement }`
 - `RACE_END { placements }`
-- `SETTLEMENT { playerId, drinksToGive, drinksToTake }`
+- `SETTLEMENT { playerId, drinksToGive, drinksToConsume }`
 - `DRINK_GIVE { from, to, amount }`
 - `DRINK_AUTO { to, amount }`
 - `PLAYER_READY { playerId }`
@@ -233,6 +235,8 @@ Append-only list of typed events:
 | SETTLEMENT | `allSettlementsDone` (auto-immediate) | DISTRIBUTION |
 | DISTRIBUTION | `allDrinksDistributed` OR `30sDistTimerExpired` | READY |
 | READY | `allReady` OR `60sReadyCapExpired` | LOBBY |
+
+> **UI Note:** SETTLEMENT and DISTRIBUTION render as a single unified UI screen (SettlementView.tsx); the phase transition from SETTLEMENT → DISTRIBUTION is seamless to the player — the leaderboard persists and the right panel updates from "results summary" to "distribution controls."
 
 ### Termination Rule
 A player who is `!isConnected` for the entire Bidding phase of a round is treated as a non-bidder for that round and is excluded from Placement, Settlement, and Distribution. They rejoin at the next round. (This is the V1 disconnect policy; deeper reconnect is deferred.)

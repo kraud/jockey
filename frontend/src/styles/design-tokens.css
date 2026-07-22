@@ -1,0 +1,91 @@
+/* ── design-tokens.css — CSS custom properties from Derby & Drafts DESIGN.md ── */
+/* Depends on: (none — loaded at the top of the cascade). */
+/* Used by: all components via Tailwind theme() and CSS vars. */
+
+:root {
+  /* ── Palette ── */
+  --color-surface: #0b1326;
+  --color-surface-bright: #31394d;
+  --color-surface-container: #171f33;
+  --color-surface-container-high: #222a3d;
+  --color-surface-container-highest: #2d3449;
+  --color-on-surface: #dae2fd;
+  --color-on-surface-variant: #d8c3ad;
+  --color-outline: #a08e7a;
+  --color-outline-variant: #534434;
+
+  --color-primary: #ffc174;
+  --color-on-primary: #472a00;
+  --color-primary-container: #f59e0b;
+  --color-on-primary-container: #613b00;
+
+  --color-secondary: #ffb0cd;
+  --color-on-secondary: #640039;
+  --color-secondary-container: #aa0266;
+  --color-on-secondary-container: #ffbad3;
+
+  --color-tertiary: #54ddfc;
+  --color-on-tertiary: #003640;
+  --color-tertiary-container: #29c1df;
+  --color-on-tertiary-container: #004b58;
+
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+
+  /* ── Suit Colors ── */
+  --color-coins: #f0c040;
+  --color-cups: #c06030;
+  --color-swords: #a0b0c0;
+  --color-clubs: #40c840;
+
+  /* ── Glass Surface ── */
+  --glass-bg: rgba(30, 41, 59, 0.7);
+  --glass-blur: 20px;
+  --glass-border: rgba(168, 158, 138, 0.15);
+
+  /* ── Typography Scale ── */
+  --font-display: "Inter", sans-serif;
+  --font-label: "Space Grotesk", monospace;
+
+  --text-display-xl-size: 120px;
+  --text-display-xl-line: 110px;
+  --text-display-xl-weight: 900;
+  --text-display-xl-tracking: -0.04em;
+
+  --text-headline-lg-size: 64px;
+  --text-headline-lg-line: 72px;
+  --text-headline-lg-weight: 900;
+  --text-headline-lg-tracking: -0.02em;
+
+  --text-headline-md-size: 48px;
+  --text-headline-md-line: 56px;
+  --text-headline-md-weight: 800;
+
+  --text-body-lg-size: 24px;
+  --text-body-lg-line: 32px;
+  --text-body-lg-weight: 600;
+
+  --text-label-bold-size: 18px;
+  --text-label-bold-line: 24px;
+  --text-label-bold-weight: 700;
+  --text-label-bold-tracking: 0.05em;
+
+  /* ── Spacing (multiples of 8px) ── */
+  --space-container-margin: 64px;
+  --space-gutter: 32px;
+  --space-card-padding: 40px;
+  --space-stack-lg: 48px;
+
+  /* ── Radii ── */
+  --radius-component: 0.5rem;
+  --radius-card: 1.5rem;
+  --radius-pill: 9999px;
+
+  /* ── Button ── */
+  --btn-bottom-border: 4px;
+
+  /* ── Progress Bar ── */
+  --progress-thickness: 32px;
+}

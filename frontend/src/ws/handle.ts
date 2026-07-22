@@ -161,7 +161,7 @@ export function applyServerMessage(state: RoomState, msg: ServerMessage): RoomSt
       const players = state.room.players.map(p => {
         const d = msg.drinks.find(d => d.playerId === p.id);
         return d
-          ? { ...p, drinks: { ...p.drinks, give: d.give, take: d.take, consume: d.consume, gaveAll: d.gaveAll } }
+          ? { ...p, drinks: { ...p.drinks, give: d.give, consume: d.consume, gaveAll: d.gaveAll } }
           : p;
       });
       return {

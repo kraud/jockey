@@ -740,7 +740,6 @@ export class Room extends DurableObject<Env> {
       drinks: this.room.players.map((p) => ({
         playerId: p.id,
         give: p.drinks.give,
-        take: p.drinks.take,
         consume: p.drinks.consume,
         gaveAll: p.drinks.gaveAll,
       })),

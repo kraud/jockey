@@ -175,3 +175,25 @@ All entries appended to `.context/race_modifiers.md` must adhere strictly to thi
 - **Beneficiary:** `Self` | `Opponent` | `Global (State Change)` | `Unspecified`
 - **Upgrades:**
   - **[Upgrade Title]:** Short description of how the effect scales up or changes.
+
+---
+## Code Documentation & Educational Commenting Standards
+
+Because the project leverages paradigms and tools that may be new to the development team (e.g., Cloudflare Durable Objects, SolidJS signals, Bun testing framework), the codebase serves a dual purpose: functional execution and architectural onboarding. 
+
+The agent must maintain the following documentation standards across both the `src/` (backend) and `frontend/` directories:
+
+### 1. The "Why" Over the "What" Directive
+- **Prohibited:** Redundant narrative comments that mirror the code syntax (e.g., `// Set active player to index`).
+- **Required:** Explanations detailing the systemic design choice, structural constraints, or paradigm traps being navigated.
+  * *Example:* `// Using custom deep-cloning here because structuredClone clears the reactive proxy bindings that SolidJS/state trackers rely on.`
+
+### 2. File-Level Architectural Context Blocks
+Every core file must begin with a compact, standardized block comment mapping its dependency context:
+```typescript
+/**
+ * @file: src/game/machine.ts
+ * @responsibility: Manages state transitions across the turn lifecycle.
+ * @upstream: Triggered by WS message parsing in room.ts.
+ * @downstream: Mutates data structures consumed by race.ts and emitted to frontend/ views.
+ */

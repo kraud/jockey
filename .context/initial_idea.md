@@ -93,3 +93,8 @@ Time to refine the distribution phase. The game_design document should be expand
 * Once the host decides, the game can trigger the transition to the next phase. Otherwise, if the time limit for the distribution phase is exceeded (30s by default, configurable for the host via the `distribution_time_limit` setting), the game will automatically move to the next phase.
 * On the ready phase, each player should clearly see the amount of drinks they need to take, and be able to mark themselves as 'ready' when they are done drinking them. For hosted players, the host will see on a dedicated list the amount each has to drink, and the host can mark them as ready as will. 
 * After everyone has marked themselves as 'ready', the host can trigger the transition, either back to bidding phase (keeping the same players and the same room) with no state remaining from the previous round (only the players' names), or end the game and re-direct everyone to the lobby.
+---
+#### Nomenclature Clarification (2026-07-22)
+The terms "drinks to take" and "drinks to consume" are synonymous. The codebase and `game_design.md` now use only "drinks to consume" to avoid confusion. "Drinks to take" as a separate concept has been removed from the data model (`drinksToTake` field no longer exists). The drink economy has exactly two states:
+- **Drinks to Give** — outgoing; owed to others; must be assigned during the Distribution phase.
+- **Drinks to Consume** — incoming; the player must actually drink these. Accumulated from: (a) auto-assigned penalties from 3rd/4th place Settlement (1× or 2× bid), and (b) drinks received from other players during Distribution.

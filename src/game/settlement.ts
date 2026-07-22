@@ -10,8 +10,8 @@ import type { Bid, SettlementResult, Suit } from "./types";
  * Payout table (per game_design.md Step 7):
  *   - 1st place → bidder earns 2 × bid.amount drinks to give
  *   - 2nd place → bidder earns 1 × bid.amount drinks to give
- *   - 3rd place → bidder owes 1 × bid.amount drinks to take (auto-consumed)
- *   - 4th place → bidder owes 2 × bid.amount drinks to take (auto-consumed)
+ *   - 3rd place → bidder owes 1 × bid.amount drinks to consume (auto-consumed)
+ *   - 4th place → bidder owes 2 × bid.amount drinks to consume (auto-consumed)
  *
  * @param bids       Array of bids placed this round.
  * @param placements Finished horses, ordered by placement (1st..4th).
@@ -36,7 +36,7 @@ export function computeSettlement(
     if (placement === undefined) continue;
 
     let drinksGive = 0;
-    let drinksTake = 0;
+    let drinksConsume = 0;
 
     switch (placement) {
       case 1:
@@ -46,17 +46,17 @@ export function computeSettlement(
         drinksGive = 1 * bid.amount;
         break;
       case 3:
-        drinksTake = 1 * bid.amount;
+        drinksConsume = 1 * bid.amount;
         break;
       case 4:
-        drinksTake = 2 * bid.amount;
+        drinksConsume = 2 * bid.amount;
         break;
     }
 
     results.push({
       playerId: bid.playerId,
       drinksGive,
-      drinksTake,
+      drinksConsume,
     });
   }
 

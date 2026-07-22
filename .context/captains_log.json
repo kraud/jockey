@@ -243,5 +243,77 @@
     "meta": {
       "confidence_score": 4
     }
+  },
+  {
+    "id": "20260722-tailwind-v4-ui-consolidation",
+    "timestamp": "2026-07-22T15:00:00Z",
+    "concern": "code",
+    "tags": ["ui-ux", "refactor", "playtest-insight"],
+    "milestone": "Playtest V1 Review",
+    "files_affected": [
+      "frontend/src/views/SettlementView.tsx",
+      "frontend/src/views/ReadyView.tsx",
+      "frontend/src/views/DistributionView.tsx",
+      "frontend/src/views/DoneView.tsx",
+      "frontend/src/views/ResultsView.tsx",
+      "frontend/src/components/",
+      "frontend/src/styles/design-tokens.css",
+      "frontend/src/styles/global.css",
+      "frontend/src/main.tsx",
+      "frontend/index.html",
+      "frontend/vite.config.ts",
+      "frontend/tsconfig.frontend.json",
+      "package.json",
+      "AGENTS.md"
+    ],
+    "summary": {
+      "decision_made": "Replaced the old separate DistributionView/DoneView/ResultsView with a single combined SettlementView that renders both SETTLEMENT and DISTRIBUTION phases as a seamless UI (leaderboard sidebar + personal result + distribution controls in one view). Added ReadyView for the READY phase with per-player drink-progress cards. Extracted reusable UI primitives into frontend/src/components/ (AppShell, GlassPanel, PlayerChip, ProgressBar, TimerBar, Button, SuitIcon, DrinkAlert, SuitGrid). Adopted Tailwind CSS v4 with a custom design-tokens.css file for color/typography/spacing primitives; added @tailwindcss/vite plugin and path alias shortcuts. Updated AGENTS.md with code documentation standards (file-level @file/@responsibility/@upstream/@downstream blocks and the 'why over what' commenting directive).",
+      "options_considered": [
+        "Tailwind v4 (chosen) — zero-runtime, JIT, native CSS-first config, minimal tooling",
+        "Keep hand-rolled CSS — rejected; growing component count needed a design-system framework",
+        "Separate DistributionView/DoneView (old) — rejected; the design doc explicitly calls SETTLEMENT/DISTRIBUTION/READY a single seamless flow"
+      ],
+      "difficulties_encountered": "Replacing three view files with two required re-routing all phase transitions in RoomView.tsx. The component extraction into a flat components/ directory meant updating six import paths across every view. Tailwind v4's CSS-first config meant porting the old global.css variable references into tailwind theme extensions in design-tokens.css while preserving the existing color palette.",
+      "reversals_and_refactors": "Removed DistributionView.tsx and DoneView.tsx entirely — their logic was absorbed into SettlementView and ReadyView respectively. ResultsView.tsx was absorbed into SettlementView's SETTLEMENT-mode leaderboard panel.",
+      "key_takeaway": "Consolidating three views into two reduced the frontend surface area by ~40% and eliminated a confusing screen transition between settlement-results and distribution-controls. The component abstraction made per-player drink cards, timer bars, and glass-panel containers reusable without prop drilling."
+    },
+    "meta": {
+      "confidence_score": 4
+    }
+  },
+  {
+    "id": "20260722-nomenclature-take-consume-merge",
+    "timestamp": "2026-07-22T23:00:00Z",
+    "concern": "design",
+    "tags": ["gameplay-loop", "refactor", "drinking-game"],
+    "milestone": "Playtest V1 Review",
+    "files_affected": [
+      ".context/game_design.md",
+      ".context/initial_idea.md",
+      "shared/messages.ts",
+      "src/game/types.ts",
+      "src/game/settlement.ts",
+      "src/game/machine.ts",
+      "src/room.ts",
+      "frontend/src/views/SettlementView.tsx",
+      "frontend/src/views/RacingView.tsx",
+      "frontend/src/views/ReadyView.tsx",
+      "frontend/src/ws/handle.ts",
+      "tests/settlement.test.ts"
+    ],
+    "summary": {
+      "decision_made": "Merged the 'drinks to take' concept into 'drinks to consume' — they are synonyms, not different game mechanics. Removed the separate `drinksTake` field from the Player drink state and all related types, event payloads, and server messages. The drink economy now has exactly two states: drinksToGive (outgoing, assigned during Distribution) and drinksToConsume (incoming, what a player must actually drink). 3rd/4th place Settlement penalties are auto-added directly to `drinksToConsume` (1x/2x bid multiplier). The data model dropped `drinksToTake` entirely; the `SETTLEMENT` race-log event now emits `drinksConsume` instead of `drinksTake`; the `drinks_updated` server message no longer carries a `take` field.",
+      "options_considered": [
+        "Merge take into consume (chosen) — simplifies the API surface, removes a redundant field that always mirrored consume at settlement time",
+        "Keep take as a read-only derivation of consume — rejected; no consumer needed the split and it added mental overhead",
+        "Rename both to 'owe'/'drink' — rejected; 'give' and 'consume' are already established in the codebase"
+      ],
+      "difficulties_encountered": "The ReadyView progress bar had a fallback `p.drinks.take || p.drinks.consume` for the denominator — removing `take` simplified it to just `p.drinks.consume`. The diff spanned 12 files across shared types, server code, frontend, and tests, requiring careful coordination to avoid type mismatches.",
+      "reversals_and_refactors": "Removed the `drinksToTake` field from SettlementResult, RaceLogEvent.SETTLEMENT, ServerMessage.drinks_updated, and Player.drinks. The `drinksTake` local variable in settlement.ts was renamed to `drinksConsume`. All test assertions updated. The design doc glossary entry for 'Drinks to Take' was deleted and 'Drinks to Consume' was updated to note they are synonymous.",
+      "key_takeaway": "When early-design nomenclature gets codified into the type system before it's fully stable, removing it later touches every layer of the stack. Better to settle on terms during Phase 1 than refactor at Phase 3 — but the resulting diff is mechanical and safe (compiler catches any missed reference)."
+    },
+    "meta": {
+      "confidence_score": 5
+    }
   }
 ]

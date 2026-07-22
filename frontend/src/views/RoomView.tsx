@@ -5,10 +5,9 @@ import type { ClientMessage } from "../../../shared/messages";
 import LobbyView from "./LobbyView";
 import BiddingView from "./BiddingView";
 import RacingView from "./RacingView";
-import DistributionView from "./DistributionView";
-import DoneView from "./DoneView";
+import SettlementView from "./SettlementView";
+import ReadyView from "./ReadyView";
 import CountdownView from "./CountdownView";
-import ResultsView from "./ResultsView";
 
 // ── frontend/src/views/RoomView.tsx — Phase router: reads room.state, dispatches to the right per-phase view component; owns the createRoomConnection lifecycle. ──
 // Depends on: @solidjs/router, solid-js, ../ws/store, all sibling view files.
@@ -25,12 +24,17 @@ export default function RoomView() {
   onCleanup(() => disconnect());
 
   return (
-    <div class="container">
-      <h1>CDC</h1>
+    <>
       {(() => {
         const room = state.room;
         if (!room) {
-          return <p>Connecting to room <strong>{code}</strong>...</p>;
+          return (
+            <div class="flex items-center justify-center min-h-screen text-body-lg text-[var(--color-on-surface-variant)]">
+              <div class="glass p-8 text-center">
+                <p>Connecting to room <strong class="text-[var(--color-primary)]">{code}</strong>...</p>
+              </div>
+            </div>
+          );
         }
         const sendFn = send as (msg: ClientMessage) => void;
         switch (room.state) {
@@ -43,15 +47,14 @@ export default function RoomView() {
           case "RACING":
             return <RacingView state={state} />;
           case "SETTLEMENT":
-            return <ResultsView state={state} send={sendFn} />;
           case "DISTRIBUTION":
-            return <DistributionView state={state} send={sendFn} />;
+            return <SettlementView state={state} send={sendFn} />;
           case "READY":
-            return <DoneView state={state} send={sendFn} />;
+            return <ReadyView state={state} send={sendFn} />;
           default:
-            return <p>Unknown phase: {room.state}</p>;
+            return <p class="text-[var(--color-error)] text-label-bold p-8">Unknown phase: {room.state}</p>;
         }
       })()}
-    </div>
+    </>
   );
 }

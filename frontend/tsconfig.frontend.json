@@ -3,12 +3,13 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "baseUrl": ".",
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
     "strict": true,
-    "noUncheckedIndexedAccess": true,
     "paths": {
-      "@cdc/shared": ["../shared"]
+      "@cdc/shared": ["../shared"],
+      "@cdc/shared/*": ["../shared/*"]
     },
     "types": ["vite/client"],
     "esModuleInterop": true,
