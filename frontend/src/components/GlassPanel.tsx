@@ -19,7 +19,8 @@ export default function GlassPanel(props: Props) {
   const border = BORDER_CLASS[props.borderColor ?? "outline"];
   return (
     <div
-      class={`glass p-[var(--space-card-padding)] ${border} ${props.class ?? ""}`}
+      class={`glass ${border} ${props.class ?? ""}`}
+      style={{ padding: "var(--space-card-padding)" }}
     >
       {props.children}
     </div>

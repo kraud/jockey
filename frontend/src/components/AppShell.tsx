@@ -28,7 +28,7 @@ export default function AppShell(props: Props) {
       </header>
 
       {/* Main Content */}
-      <main class="flex-1 px-[var(--space-container-margin)] py-8 max-w-[1440px] mx-auto w-full">
+      <main class="flex-1 py-8 max-w-[1440px] mx-auto min-w-full justify-items-center" style={{ "padding-left": "var(--space-container-margin)", "padding-right": "var(--space-container-margin)" }}>
         {props.children}
       </main>
 

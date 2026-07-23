@@ -65,17 +65,14 @@ export default function HomeView() {
       <div class="flex flex-col items-center justify-center py-12 gap-[var(--space-stack-lg)] max-w-7xl mx-auto w-full">
         {/* ── Hero Section ── */}
         <section class="text-center space-y-4">
-          <h1 class="text-display-xl text-[var(--color-primary)] text-glow-gold leading-none">
-            DERBY & DRAFTS
+          <h1 class="text-display-xl text-[var(--color-primary)] leading-none">
+            DERBY DAY SUIT
           </h1>
-          <p class="text-body-lg text-[var(--color-secondary)] italic max-w-2xl mx-auto">
-            The social racing game where <em class="not-italic font-bold">every draw is a drink.</em>
-          </p>
         </section>
 
         {/* ── Player Identification ── */}
-        <section class="w-full max-w-xl">
-          <GlassPanel borderColor="primary" class="flex flex-col items-center gap-6">
+        <section class="w-full max-w-2xl flex gap-4 justify-center ">
+          <GlassPanel borderColor="primary" class="flex flex-col items-center gap-3">
             <label
               for="player-name"
               class="text-label-bold text-[var(--color-primary)] uppercase tracking-widest"
@@ -86,7 +83,7 @@ export default function HomeView() {
               <input
                 type="text"
                 id="player-name"
-                class="flex-1 bg-[var(--color-surface-container-low)] border-b-4 border-[var(--color-primary)] text-center text-headline-md text-[var(--color-on-surface)] focus:outline-none focus:border-[var(--color-secondary)] transition-colors p-4 rounded-t-lg"
+                class="flex-1 bg-[var(--color-surface-container-low)] border-b-2 border-[var(--color-primary)] text-center text-headline-md text-[var(--color-on-surface)] focus:outline-none focus:border-[var(--color-secondary)] transition-colors p-1 rounded-2xl"
                 placeholder="E.G. CHAMPION_CHUG"
                 value={playerName()}
                 onInput={(e) => {
@@ -95,16 +92,16 @@ export default function HomeView() {
                 }}
                 onKeyDown={(e) => e.key === "Enter" && nameValid() && handleCreate()}
               />
-              <button
-                type="button"
-                class="bg-[var(--color-primary)] text-[var(--color-on-primary)] p-4 rounded-[var(--radius-component)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center shadow-lg"
-                title="Auto-generate Name"
-                onClick={() => setPlayerName(randomName())}
-              >
-                <span class="material-symbols-outlined text-3xl">casino</span>
-              </button>
             </div>
           </GlassPanel>
+          <button
+            type="button"
+            class="bg-[var(--color-primary)] text-[var(--color-on-primary)] p-8 rounded-[var(--radius-component)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center shadow-lg max-h-max self-center"
+            title="Auto-generate Name"
+            onClick={() => setPlayerName(randomName())}
+          >
+            <span class="material-symbols-outlined text-3xl">casino</span>
+          </button>
         </section>
 
         {/* ── Primary Actions Grid ── */}
